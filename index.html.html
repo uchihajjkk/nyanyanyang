@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MAESTRO : 첫 번째 지휘봉 — 1인칭 클래식 오케스트라 지휘 리듬 게임</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ivory-bg: #faf5ea;
+      --parchment: #f3e8d2;
+      --walnut: #4a2a18;
+      --crimson: #8b1e24;
+      --gold-bright: #d4a348;
+      --gold-deep: #9c6f21;
+      --ink-dark: #2c1c12;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f6efe0;
+      color: var(--ink-dark);
+      font-family: 'Noto Sans KR', sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .font-serif-kr {
+      font-family: 'Noto Serif KR', serif;
+    }
+
+    .font-cormorant {
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* 밝고 품격 있는 크림 아이보리 & 앤티크 골드 패널 */
+    .classic-card {
+      background: linear-gradient(160deg, rgba(253, 249, 240, 0.96), rgba(242, 231, 209, 0.96));
+      backdrop-filter: blur(12px);
+      border: 1.5px solid #c59b4b;
+      box-shadow: 0 12px 34px rgba(62, 38, 18, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .classic-hud {
+      background: linear-gradient(180deg, rgba(254, 250, 242, 0.94), rgba(244, 234, 213, 0.92));
+      backdrop-filter: blur(8px);
+      border: 1.5px solid #c59b4b;
+      box-shadow: 0 6px 20px rgba(68, 42, 20, 0.16), inset 0 1px 0 #ffffff;
+    }
+
+    .royal-btn {
+      background: linear-gradient(135deg, #9e242b 0%, #74161c 100%);
+      color: #fdf8ee;
+      border: 1.5px solid #e0b868;
+      box-shadow: 0 4px 14px rgba(139, 30, 36, 0.3), inset 0 1px 0 rgba(255, 236, 194, 0.35);
+      transition: all 0.18s ease;
+    }
+
+    .royal-btn:hover {
+      transform: translateY(-1.5px);
+      filter: brightness(1.08);
+      box-shadow: 0 6px 20px rgba(139, 30, 36, 0.42);
+    }
+
+    .royal-btn:active {
+      transform: translateY(1px);
+    }
+
+    .gold-outline-btn {
+      background: linear-gradient(180deg, #fffcf5, #efe2c6);
+      color: #4a2a18;
+      border: 1.5px solid #b8893a;
+      box-shadow: 0 3px 10px rgba(74, 42, 24, 0.12);
+      transition: all 0.15s ease;
+    }
+
+    .gold-outline-btn:hover {
+      background: linear-gradient(180deg, #ffffff, #f7ebd2);
+      border-color: #8b1e24;
+    }
+
+    .program-row {
+      background: rgba(255, 252, 244, 0.85);
+      border: 1px solid rgba(184, 137, 58, 0.45);
+      transition: all 0.2s ease;
+    }
+
+    .program-row:hover {
+      background: #ffffff;
+      border-color: #9c6f21;
+    }
+
+    .program-row.selected {
+      background: linear-gradient(135deg, #fffdf7, #f5e6c8);
+      border: 2px solid #8b1e24;
+      box-shadow: 0 4px 14px rgba(139, 30, 36, 0.16);
+    }
+
+    /* 원형 앤티크 골드 & 양피지 아이템 슬롯 */
+    .item-orb {
+      background: radial-gradient(circle at 32% 28%, #fffdf8 0%, #f1e2c4 68%, #d8be8c 100%);
+      border: 2.5px solid #b8893a;
+      box-shadow: 0 6px 16px rgba(58, 35, 16, 0.28), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .item-orb:hover {
+      transform: translateY(-4px) scale(1.06);
+      border-color: #8b1e24;
+      box-shadow: 0 10px 22px rgba(139, 30, 36, 0.28), inset 0 2px 5px #ffffff;
+    }
+
+    .item-orb.equipped {
+      transform: translateY(-7px) scale(1.12);
+      border: 3px solid #8b1e24;
+      background: radial-gradient(circle at 32% 28%, #fffbeb 0%, #fde68a 75%, #f59e0b 100%);
+      box-shadow: 0 0 0 4px rgba(212, 163, 72, 0.5), 0 12px 24px rgba(139, 30, 36, 0.35);
+    }
+
+    /* 커스텀 슬라이더 */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #dfd0b2;
+      height: 6px;
+      border-radius: 999px;
+      border: 1px solid #b8893a;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #8b1e24;
+      border: 2px solid #f7e6c4;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #efe4ce; }
+    ::-webkit-scrollbar-thumb { background: #b8893a; border-radius: 999px; }
+  </style>
+</head>
+<body class="relative overflow-hidden">
+
+  <!-- 메인 1인칭 콘서트홀 + 지휘자 보면대 + 양손 + 투사체 캔버스 -->
+  <canvas id="concertCanvas" class="fixed inset-0 w-full h-full block z-0"></canvas>
+
+  <!-- 상단 클래식 프로그램 HUD -->
+  <header class="fixed top-0 left-0 right-0 z-20 px-3 sm:px-5 pt-2.5 flex flex-wrap items-start justify-between gap-2 pointer-events-none">
+    <!-- 좌측: 현재 악곡 & 점수 -->
+    <div class="classic-hud rounded-2xl px-3.5 py-2 flex items-center gap-3 pointer-events-auto">
+      <div id="hudGrade" class="w-10 h-10 rounded-full bg-[#8b1e24] border-2 border-[#e2bc6b] flex items-center justify-center font-cormorant font-bold italic text-2xl text-[#fdf6e7] shadow-sm">
+        S
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span id="hudTempoBadge" class="text-[10px] font-serif-kr font-bold px-2 py-0.5 rounded-full bg-[#e9d8b6] text-[#5a351e] border border-[#c59b4b]">연주회</span>
+          <span id="hudSongTitle" class="font-serif-kr font-bold text-xs sm:text-sm text-[#2c1c12] truncate max-w-[150px] sm:max-w-[230px]">베토벤 - 교향곡 5번 '운명' 1악장</span>
+        </div>
+        <div class="flex items-baseline gap-2 mt-0.5">
+          <span class="text-[10px] font-cormorant font-bold tracking-widest text-[#8b1e24]">SCORE</span>
+          <span id="hudScore" class="font-cormorant font-bold text-lg sm:text-xl text-[#2c1c12] tabular-nums">0</span>
+        </div>
+        <div class="w-full h-1.5 bg-[#e6d7b9] rounded-full mt-1 overflow-hidden border border-[#c59b4b]/50">
+          <div id="hudProgress" class="h-full bg-gradient-to-r from-[#8b1e24] via-[#b8893a] to-[#d9a74a] w-0 transition-all duration-100"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 중앙: 360° 지휘자 시선 나침반 & 시점 전환 -->
+    <div class="classic-hud rounded-2xl px-3 py-1.5 flex flex-col items-center pointer-events-auto order-3 sm:order-2 w-full sm:w-auto">
+      <div class="flex items-center justify-between w-full text-[11px] px-1 mb-1">
+        <span class="font-serif-kr font-bold text-[#5a351e] flex items-center gap-1">
+          <span>🧭</span> 지휘자 360° 시선
+        </span>
+        <span id="hudYawText" class="font-cormorant font-bold text-xs text-[#8b1e24]">0° · 오케스트라 정면</span>
+      </div>
+      <div class="relative w-full sm:w-64 h-2 bg-[#e5d5b5] rounded-full border border-[#b8893a]/70 overflow-hidden mb-1.5">
+        <div class="absolute inset-y-0 left-[36%] right-[36%] bg-[#d4a348]/40" title="오케스트라 정면"></div>
+        <div id="hudYawPin" class="absolute top-0 bottom-0 w-7 -ml-3.5 bg-[#8b1e24] rounded-full shadow transition-all duration-75" style="left: 50%;"></div>
+      </div>
+      <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-center">
+        <button data-yaw="0" class="cam-btn gold-outline-btn px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold cursor-pointer">
+          🎻 오케스트라 정면
+        </button>
+        <button data-yaw="-80" class="cam-btn gold-outline-btn px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] cursor-pointer">
+          🏛️ 좌측 귀빈석
+        </button>
+        <button data-yaw="80" class="cam-btn gold-outline-btn px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] cursor-pointer">
+          🏛️ 우측 귀빈석
+        </button>
+        <button data-yaw="180" class="cam-btn gold-outline-btn px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold text-[#8b1e24] cursor-pointer">
+          👏 뒤쪽 관객석
+        </button>
+      </div>
+    </div>
+
+    <!-- 우측: 관객 열기 & 쇼맨십 + 일시정지 -->
+    <div class="classic-hud rounded-2xl px-3.5 py-2 flex items-center gap-3 pointer-events-auto order-2 sm:order-3">
+      <div>
+        <div class="flex justify-between items-center text-[10px] font-serif-kr font-bold mb-1">
+          <span class="text-[#5a351e]">관객 열기 (HARMONY)</span>
+          <span id="hudHarmonyVal" class="text-[#8b1e24]">100%</span>
+        </div>
+        <div class="w-24 sm:w-28 h-2.5 bg-[#e5d5b5] rounded-full overflow-hidden border border-[#b8893a] p-0.5">
+          <div id="hudHarmonyBar" class="h-full bg-gradient-to-r from-[#8b1e24] via-[#c58b2a] to-[#3f7d44] rounded-full transition-all duration-150" style="width: 100%;"></div>
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-[#6b4830] mt-1">
+          <span>쇼맨십 보너스</span>
+          <span id="hudShowmanship" class="font-cormorant font-bold text-[#8b1e24]">+0 pts</span>
+        </div>
+      </div>
+      <button id="btnPause" title="일시정지 (ESC)" class="w-9 h-9 rounded-full gold-outline-btn flex items-center justify-center text-[#4a2a18] cursor-pointer">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 투척 안내 배너 (아이템 장착 시 상단에 표시) -->
+  <div id="throwBanner" class="fixed top-24 sm:top-20 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-0 transition-opacity duration-200">
+    <div class="classic-hud px-4 py-1.5 rounded-full flex items-center gap-2 border-2 border-[#8b1e24] shadow-md">
+      <span id="throwBannerIcon" class="text-base">🪄</span>
+      <span id="throwBannerText" class="text-xs font-serif-kr font-bold text-[#8b1e24]">연주자나 관객을 클릭해 던지세요! (아이콘 재클릭 시 중앙 인물에 즉시 투척)</span>
+    </div>
+  </div>
+
+  <!-- 좌측 하단 원형 아이템 슬롯 3개 (1·2·3) -->
+  <div id="leftItemDock" class="fixed bottom-3 left-3 sm:bottom-5 sm:left-5 z-20 flex flex-col items-start gap-1.5">
+    <span class="text-[10px] font-serif-kr font-bold px-2.5 py-0.5 rounded-full bg-[#faf3e3]/95 border border-[#b8893a] text-[#5a351e] shadow-sm">
+      지휘자 소품 (1·2·3)
+    </span>
+    <div class="flex items-center gap-2 sm:gap-2.5">
+      <button data-item="baton" class="item-orb relative w-14 h-14 sm:w-15 sm:h-15 rounded-full flex flex-col items-center justify-center cursor-pointer" title="예비 지휘봉 던지기 [1]">
+        <span class="text-xl sm:text-2xl leading-none">🪄</span>
+        <span class="text-[9px] font-bold text-[#4a2a18] mt-0.5">예비지휘봉</span>
+        <span class="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-[#4a2a18] text-[#fdf6e7] text-[9px] font-bold flex items-center justify-center border border-[#d4a348]">1</span>
+      </button>
+      <button data-item="banana" class="item-orb relative w-14 h-14 sm:w-15 sm:h-15 rounded-full flex flex-col items-center justify-center cursor-pointer" title="바나나 껍질 던지기 [2]">
+        <span class="text-xl sm:text-2xl leading-none">🍌</span>
+        <span class="text-[9px] font-bold text-[#4a2a18] mt-0.5">바나나껍질</span>
+        <span class="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-[#4a2a18] text-[#fdf6e7] text-[9px] font-bold flex items-center justify-center border border-[#d4a348]">2</span>
+      </button>
+      <button data-item="score_sheet" class="item-orb relative w-14 h-14 sm:w-15 sm:h-15 rounded-full flex flex-col items-center justify-center cursor-pointer" title="악보 뭉치 날리기 [3]">
+        <span class="text-xl sm:text-2xl leading-none">🎼</span>
+        <span class="text-[9px] font-bold text-[#4a2a18] mt-0.5">악보뭉치</span>
+        <span class="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-[#4a2a18] text-[#fdf6e7] text-[9px] font-bold flex items-center justify-center border border-[#d4a348]">3</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 우측 하단 원형 아이템 슬롯 3개 (8·9·0) -->
+  <div id="rightItemDock" class="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-20 flex flex-col items-end gap-1.5">
+    <span class="text-[10px] font-serif-kr font-bold px-2.5 py-0.5 rounded-full bg-[#faf3e3]/95 border border-[#b8893a] text-[#5a351e] shadow-sm">
+      무대·관객 연출 (8·9·0)
+    </span>
+    <div class="flex items-center gap-2 sm:gap-2.5">
+      <button data-item="rose" class="item-orb relative w-14 h-14 sm:w-15 sm:h-15 rounded-full flex flex-col items-center justify-center cursor-pointer" title="붉은 장미꽃 던지기 [8]">
+        <span class="text-xl sm:text-2xl leading-none">🌹</span>
+        <span class="text-[9px] font-bold text-[#4a2a18] mt-0.5">붉은장미</span>
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#8b1e24] text-[#fdf6e7] text-[9px] font-bold flex items-center justify-center border border-[#e2bc6b]">8</span>
+      </button>
+      <button data-item="tomato" class="item-orb relative w-14 h-14 sm:w-15 sm:h-15 rounded-full flex flex-col items-center justify-center cursor-pointer" title="잘 익은 토마토 던지기 [9]">
+        <span class="text-xl sm:text-2xl leading-none">🍅</span>
+        <span class="text-[9px] font-bold text-[#4a2a18] mt-0.5">토마토</span>
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#8b1e24] text-[#fdf6e7] text-[9px] font-bold flex items-center justify-center border border-[#e2bc6b]">9</span>
+      </button>
+      <button data-item="champagne" class="item-orb relative w-14 h-14 sm:w-15 sm:h-15 rounded-full flex flex-col items-center justify-center cursor-pointer" title="샴페인 코르크 발사 [0]">
+        <span class="text-xl sm:text-2xl leading-none">🍾</span>
+        <span class="text-[9px] font-bold text-[#4a2a18] mt-0.5">샴페인</span>
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#8b1e24] text-[#fdf6e7] text-[9px] font-bold flex items-center justify-center border border-[#e2bc6b]">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 1. 클래식 콘서트 프로그램북 로비 모달 -->
+  <div id="lobbyModal" class="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-5 bg-[#2c1c12]/45 backdrop-blur-sm">
+    <div class="classic-card rounded-3xl max-w-4xl w-full p-5 sm:p-8 max-h-[94vh] overflow-y-auto relative">
+      <!-- 상단 프로그램북 타이틀 -->
+      <div class="text-center pb-4 border-b border-[#b8893a]/50 mb-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-0.5 rounded-full bg-[#efe2c6] border border-[#b8893a] text-[#6d451c] text-xs font-cormorant font-bold tracking-widest uppercase mb-1.5">
+          <span>✦</span> WIENER MUSIKVEREIN · GRAND SYMPHONY HALL <span>✦</span>
+        </div>
+        <h1 class="font-serif-kr font-black text-2xl sm:text-4xl text-[#2c1c12] tracking-tight">
+          MAESTRO : 첫 번째 지휘봉
+        </h1>
+        <p class="font-serif-kr text-xs sm:text-sm text-[#5a351e] mt-1">
+          지휘자 단상 위 1인칭 시점 — 양손 지휘 액팅, 보면대 악보 리듬 연주 & 360° 객석 인터랙션
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
+        <!-- 좌측: 오늘의 연주 프로그램 (7컬럼) -->
+        <div class="lg:col-span-7 flex flex-col gap-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-serif-kr font-bold text-xs sm:text-sm text-[#5a351e]">🎼 오늘의 연주 레퍼토리</span>
+            <button id="btnPreview" class="gold-outline-btn text-xs px-3 py-1 rounded-full font-bold cursor-pointer">
+              🎵 선율 미리듣기
+            </button>
+          </div>
+          <div id="songList" class="flex flex-col gap-2.5">
+            <!-- JS 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- 우측: 난이도, 악보 속도 & 조작 안내 (5컬럼) -->
+        <div class="lg:col-span-5 bg-[#f7eedc] rounded-2xl p-4 border border-[#c59b4b]/70 flex flex-col justify-between gap-4">
+          <div>
+            <span class="font-serif-kr font-bold text-xs text-[#5a351e] block mb-2">🎻 연주 난이도 선택</span>
+            <div class="grid grid-cols-3 gap-2 mb-4">
+              <button data-diff="입문" class="diff-choice gold-outline-btn py-2 rounded-xl font-serif-kr font-bold text-xs cursor-pointer">
+                입문<br><span class="font-sans text-[10px] font-normal">여유로운 박자</span>
+              </button>
+              <button data-diff="연주회" class="diff-choice royal-btn py-2 rounded-xl font-serif-kr font-bold text-xs cursor-pointer">
+                연주회<br><span class="font-sans text-[10px] font-normal">표준 공연</span>
+              </button>
+              <button data-diff="거장" class="diff-choice gold-outline-btn py-2 rounded-xl font-serif-kr font-bold text-xs cursor-pointer">
+                거장<br><span class="font-sans text-[10px] font-normal">비르투오소</span>
+              </button>
+            </div>
+
+            <!-- 악보 스크롤 속도 -->
+            <div class="mb-3">
+              <div class="flex justify-between items-center text-xs mb-1">
+                <span class="font-serif-kr font-bold text-[#5a351e]">악보 전개 속도</span>
+                <span id="speedDisplay" class="font-cormorant font-bold text-base text-[#8b1e24]">8.0</span>
+              </div>
+              <input id="speedSlider" type="range" min="5.0" max="11.0" step="0.5" value="8.0" class="w-full" />
+            </div>
+
+            <!-- 노트 범례 -->
+            <div class="bg-[#fffcf5] rounded-xl p-2.5 border border-[#c59b4b]/60 text-[11px] text-[#4a2a18] space-y-1">
+              <div class="font-bold text-[#8b1e24] mb-0.5">악보 리듬 노트 (키: D · F · J · K 또는 터치)</div>
+              <div>● <b>기본 박자 노트:</b> 정박 타격 / 오른손 지휘봉 스냅</div>
+              <div>◆ <b>강세(Forte) 황금 노트:</b> 점수 2배 & 강렬한 악센트</div>
+              <div>━ <b>프레이즈 홀드:</b> 왼손 크레셴도 제스처 유지</div>
+              <div>▲ <b>큐(Cue) 사인 플릭:</b> 위로 플릭/타격 시 파트 조명 & 왼손 지시</div>
+            </div>
+          </div>
+
+          <!-- 360도 시점 & 아이템 투척 안내 -->
+          <div class="bg-[#fffcf5] rounded-xl p-2.5 border border-[#c59b4b]/60 text-[11px] text-[#4a2a18] leading-relaxed">
+            🎯 <b>360° 시선 & 투척:</b> 배경 드래그(또는 <b>←/→</b> 키)로 연주자와 뒤쪽 관객을 둘러보고, 좌·우 원형 슬롯(<b>1~3 / 8~0</b>)을 선택해 클릭하면 왼손으로 아이템을 던집니다!
+          </div>
+        </div>
+      </div>
+
+      <!-- 시작 버튼 -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button id="btnStartConcert" class="royal-btn w-full sm:w-auto px-12 py-3.5 rounded-full font-serif-kr font-bold text-base sm:text-lg tracking-wide cursor-pointer">
+          🪄 지휘자 단상 입장 (공연 시작)
+        </button>
+        <button id="btnExploreHall" class="gold-outline-btn w-full sm:w-auto px-6 py-3.5 rounded-full font-serif-kr font-bold text-xs sm:text-sm cursor-pointer">
+          🏛️ 공연장 둘러보기 (연습 모드)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 일시정지 모달 -->
+  <div id="pauseModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-[#2c1c12]/45 backdrop-blur-sm">
+    <div class="classic-card rounded-3xl max-w-sm w-full p-6 text-center">
+      <div class="text-xs font-cormorant font-bold tracking-widest text-[#8b1e24] uppercase mb-1">INTERMISSION</div>
+      <h2 class="font-serif-kr font-bold text-2xl text-[#2c1c12] mb-2">공연 잠시 멈춤</h2>
+      <p class="text-xs text-[#5a351e] mb-6">지휘봉을 잠시 내려놓았습니다.</p>
+      <div class="flex flex-col gap-2.5">
+        <button id="btnResume" class="royal-btn py-3 rounded-full font-serif-kr font-bold text-sm cursor-pointer">지휘 계속하기</button>
+        <button id="btnRestart" class="gold-outline-btn py-3 rounded-full font-serif-kr font-bold text-sm cursor-pointer">처음부터 다시 연주</button>
+        <button id="btnToLobby" class="gold-outline-btn py-3 rounded-full font-serif-kr text-sm cursor-pointer">프로그램북(곡 선택)으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 공연 종료 커튼콜 & 마에스트로 평론 리포트 모달 -->
+  <div id="resultModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-[#2c1c12]/50 backdrop-blur-sm">
+    <div class="classic-card rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center">
+      <div class="text-xs font-cormorant font-bold tracking-widest text-[#8b1e24] uppercase mb-1">CURTAIN CALL · MAESTRO REVIEW</div>
+      <h2 id="resSongTitle" class="font-serif-kr font-bold text-lg sm:text-xl text-[#2c1c12] mb-4">베토벤 - 교향곡 5번 '운명' 1악장</h2>
+
+      <div class="flex items-center justify-center gap-5 my-3">
+        <div class="w-24 h-24 rounded-full bg-[#8b1e24] border-4 border-[#d4a348] shadow-lg flex flex-col items-center justify-center text-[#fdf8ee]">
+          <span class="text-[10px] font-cormorant tracking-widest opacity-85">GRADE</span>
+          <span id="resRank" class="font-cormorant font-bold italic text-5xl leading-none">S</span>
+        </div>
+        <div class="text-left">
+          <div class="text-xs font-cormorant font-bold text-[#6b4830]">TOTAL PERFORMANCE SCORE</div>
+          <div id="resScore" class="font-cormorant font-bold text-3xl sm:text-4xl text-[#2c1c12]">0</div>
+          <div id="resTitleRank" class="font-serif-kr font-bold text-xs text-[#8b1e24] mt-1">✦ 빈 필하모닉 전설의 마에스트로</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-5 bg-[#f7eedc] p-3.5 rounded-2xl border border-[#c59b4b]">
+        <div>
+          <div class="text-[10px] font-cormorant font-bold text-[#8b1e24]">BRILLIANT</div>
+          <div id="resPerfect" class="font-cormorant font-bold text-xl text-[#2c1c12]">0</div>
+        </div>
+        <div>
+          <div class="text-[10px] font-cormorant font-bold text-[#9c6f21]">GRAZIOSO</div>
+          <div id="resGreat" class="font-cormorant font-bold text-xl text-[#2c1c12]">0</div>
+        </div>
+        <div>
+          <div class="text-[10px] font-cormorant font-bold text-[#3f7d44]">MAX COMBO</div>
+          <div id="resCombo" class="font-cormorant font-bold text-xl text-[#2c1c12]">0</div>
+        </div>
+        <div>
+          <div class="text-[10px] font-serif-kr font-bold text-[#5a351e]">소품 투척</div>
+          <div id="resThrows" class="font-cormorant font-bold text-xl text-[#8b1e24]">0회</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btnRetryResult" class="royal-btn flex-1 py-3 rounded-full font-serif-kr font-bold text-sm cursor-pointer">앙코르 연주 (다시하기)</button>
+        <button id="btnLobbyResult" class="gold-outline-btn flex-1 py-3 rounded-full font-serif-kr font-bold text-sm cursor-pointer">다른 악곡 선택</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * 1. 클래식 악곡 데이터 & Web Audio API 관현악·효과음 신시사이저
+     * ============================================================================
+     */
+    const NOTE_FREQS = {
+      'C2': 65.41, 'D2': 73.42, 'Eb2': 77.78, 'E2': 82.41, 'F2': 87.31, 'Fs2': 92.50, 'G2': 98.00, 'Ab2': 103.83, 'A2': 110.00, 'Bb2': 116.54, 'B2': 123.47,
+      'C3': 130.81, 'D3': 146.83, 'Eb3': 155.56, 'E3': 164.81, 'F3': 174.61, 'Fs3': 185.00, 'G3': 196.00, 'Ab3': 207.65, 'A3': 220.00, 'Bb3': 233.08, 'B3': 246.94,
+      'C4': 261.63, 'Cs4': 277.18, 'D4': 293.66, 'Eb4': 311.13, 'E4': 329.63, 'F4': 349.23, 'Fs4': 369.99, 'G4': 392.00, 'Ab4': 415.30, 'A4': 440.00, 'Bb4': 466.16, 'B4': 493.88,
+      'C5': 523.25, 'Cs5': 554.37, 'D5': 587.33, 'Eb5': 622.25, 'E5': 659.25, 'F5': 698.46, 'Fs5': 739.99, 'G5': 783.99, 'Ab5': 830.61, 'A5': 880.00, 'Bb5': 932.33, 'B5': 987.77,
+      'C6': 1046.50
+    };
+
+    const SONGS = [
+      {
+        id: 'beethoven5',
+        composer: 'LUDWIG VAN BEETHOVEN',
+        title: "교향곡 5번 '운명' 1악장 (Allegro con brio)",
+        subtitle: '운명의 문을 두드리는 강렬한 4음 동기와 웅장한 관현악 총주',
+        bpm: 108,
+        totalBeats: 48,
+        events: [
+          [0.5, 0.45, 'strings', ['G4', 'G3']], [1.0, 0.45, 'strings', ['G4', 'G3']], [1.5, 0.45, 'strings', ['G4', 'G3']],
+          [2.0, 2.2, 'brass', ['Eb4', 'Eb3', 'C3']], [2.0, 1.5, 'timpani', ['C2']],
+          [4.5, 0.45, 'strings', ['F4', 'F3']], [5.0, 0.45, 'strings', ['F4', 'F3']], [5.5, 0.45, 'strings', ['F4', 'F3']],
+          [6.0, 2.2, 'brass', ['D4', 'D3', 'G2']], [6.0, 1.5, 'timpani', ['G2']],
+          [8.5, 0.45, 'strings', ['Eb4']], [9.0, 0.45, 'strings', ['Eb4']], [9.5, 0.45, 'strings', ['Eb4']], [10.0, 1.2, 'strings', ['C4']],
+          [11.0, 0.45, 'strings', ['Ab4']], [11.5, 0.45, 'strings', ['Ab4']], [12.0, 0.45, 'strings', ['Ab4']], [12.5, 1.8, 'woodwind', ['G4', 'B4']],
+          [14.5, 0.45, 'strings', ['Eb5']], [15.0, 0.45, 'strings', ['Eb5']], [15.5, 0.45, 'strings', ['Eb5']],
+          [16.0, 1.8, 'brass', ['C5', 'Eb4', 'C3']], [16.0, 1.0, 'timpani', ['C2']],
+          [18.0, 0.45, 'strings', ['D5']], [18.5, 0.45, 'strings', ['D5']], [19.0, 0.45, 'strings', ['D5']], [19.5, 1.5, 'woodwind', ['B4', 'D5']],
+          [21.5, 0.45, 'strings', ['F5']], [22.0, 0.45, 'strings', ['F5']], [22.5, 0.45, 'strings', ['F5']], [23.0, 1.5, 'brass', ['D5', 'G3']],
+          [24.5, 0.45, 'strings', ['G5']], [25.0, 0.45, 'strings', ['G5']], [25.5, 0.45, 'strings', ['G5']],
+          [26.0, 2.0, 'brass', ['Eb5', 'C4', 'C3']], [26.0, 1.2, 'timpani', ['C2']],
+          [28.5, 0.45, 'strings', ['Ab5']], [29.0, 0.45, 'strings', ['Ab5']], [29.5, 0.45, 'strings', ['Ab5']],
+          [30.0, 2.0, 'brass', ['F5', 'D4', 'G2']], [30.0, 1.2, 'timpani', ['G2']],
+          [32.0, 1.5, 'brass', ['G5', 'Eb4', 'C3']], [32.0, 1.0, 'timpani', ['C2']],
+          [34.0, 1.5, 'strings', ['F5', 'D4', 'G2']], [34.0, 1.0, 'timpani', ['G2']],
+          [36.0, 1.5, 'brass', ['Eb5', 'C4', 'C3']], [36.0, 1.0, 'timpani', ['C2']],
+          [38.0, 1.5, 'woodwind', ['D5', 'B4', 'G3']], [38.0, 1.0, 'timpani', ['G2']],
+          [40.0, 0.45, 'strings', ['C5', 'G4']], [40.5, 0.45, 'strings', ['D5', 'G4']], [41.0, 0.45, 'strings', ['Eb5', 'G4']], [41.5, 0.45, 'strings', ['F5', 'G4']],
+          [42.0, 2.0, 'brass', ['G5', 'Eb4', 'C3']], [42.0, 1.0, 'timpani', ['C2']],
+          [44.0, 1.0, 'timpani', ['G2']], [45.0, 1.0, 'timpani', ['G2']],
+          [46.0, 2.5, 'brass', ['C5', 'G4', 'E4', 'C3']], [46.0, 2.5, 'strings', ['C6', 'G5', 'E5']], [46.0, 2.0, 'timpani', ['C2']]
+        ]
+      },
+      {
+        id: 'vivaldi_spring',
+        composer: 'ANTONIO VIVALDI',
+        title: "사계 중 '봄' 1악장 (Allegro)",
+        subtitle: '햇살 가득한 아침의 바이올린 협주곡과 새들의 트릴',
+        bpm: 120,
+        totalBeats: 48,
+        events: [
+          [0.0, 0.9, 'strings', ['E4', 'E3']], [1.0, 0.9, 'strings', ['Ab4', 'E3']], [2.0, 0.9, 'strings', ['Ab4', 'E3']], [3.0, 0.9, 'strings', ['Ab4', 'E3']],
+          [4.0, 0.45, 'strings', ['Fs4']], [4.5, 0.45, 'strings', ['E4']], [5.0, 1.8, 'strings', ['B4', 'E3']], [7.0, 0.45, 'strings', ['B4']], [7.5, 0.45, 'strings', ['A4']],
+          [8.0, 0.9, 'strings', ['Ab4', 'E3']], [9.0, 0.9, 'strings', ['Ab4', 'E3']], [10.0, 0.9, 'strings', ['Ab4', 'E3']], [11.0, 0.45, 'strings', ['Fs4']], [11.5, 0.45, 'strings', ['E4']],
+          [12.0, 1.8, 'brass', ['B4', 'E3']], [14.0, 0.45, 'strings', ['B4']], [14.5, 0.45, 'strings', ['A4']], [15.0, 0.9, 'strings', ['Ab4', 'E3']],
+          [16.0, 0.9, 'woodwind', ['B4', 'E4']], [17.0, 0.9, 'woodwind', ['A4', 'Fs4']], [18.0, 0.9, 'woodwind', ['Ab4', 'E4']], [19.0, 0.9, 'woodwind', ['Fs4', 'B3']],
+          [20.0, 1.8, 'strings', ['E4', 'B3', 'E3']], [22.0, 0.45, 'woodwind', ['B5']], [22.5, 0.45, 'woodwind', ['Ab5']], [23.0, 0.45, 'woodwind', ['B5']], [23.5, 0.45, 'woodwind', ['Ab5']],
+          [24.0, 0.9, 'strings', ['B4', 'E3']], [25.0, 0.9, 'strings', ['A4', 'Fs3']], [26.0, 0.9, 'strings', ['Ab4', 'E3']], [27.0, 0.9, 'strings', ['Fs4', 'B2']],
+          [28.0, 1.8, 'brass', ['E4', 'B3', 'E3']], [30.0, 0.45, 'woodwind', ['E5']], [30.5, 0.45, 'woodwind', ['Fs5']], [31.0, 0.45, 'woodwind', ['Ab5']], [31.5, 0.45, 'woodwind', ['B5']],
+          [32.0, 0.9, 'strings', ['E5', 'Ab4', 'E3']], [33.0, 0.9, 'strings', ['Ab5', 'B4', 'E3']], [34.0, 0.9, 'strings', ['Ab5', 'B4', 'E3']], [35.0, 0.9, 'strings', ['Ab5', 'B4', 'E3']],
+          [36.0, 0.45, 'strings', ['Fs5']], [36.5, 0.45, 'strings', ['E5']], [37.0, 1.8, 'brass', ['B5', 'E4', 'E3']], [37.0, 1.0, 'timpani', ['E2']],
+          [39.0, 0.45, 'strings', ['B5']], [39.5, 0.45, 'strings', ['A5']],
+          [40.0, 0.9, 'strings', ['Ab5', 'E4']], [41.0, 0.9, 'strings', ['Fs5', 'B3']], [42.0, 0.9, 'strings', ['E5', 'Ab3']], [43.0, 0.9, 'strings', ['Fs5', 'B3']],
+          [44.0, 1.0, 'timpani', ['E2']], [45.0, 1.0, 'timpani', ['B2']],
+          [46.0, 2.5, 'brass', ['Ab4', 'E4', 'B3', 'E3']], [46.0, 2.5, 'strings', ['E5', 'B4', 'Ab4']], [46.0, 2.0, 'timpani', ['E2']]
+        ]
+      },
+      {
+        id: 'brahms_hungarian5',
+        composer: 'JOHANNES BRAHMS',
+        title: '헝가리 무곡 5번 (Allegro)',
+        subtitle: '집시 선율의 역동적인 템포 변화와 화려한 관현악 춤곡',
+        bpm: 132,
+        totalBeats: 48,
+        events: [
+          [0.0, 1.4, 'strings', ['Fs4', 'Fs3']], [1.5, 0.45, 'strings', ['B4']], [2.0, 1.4, 'strings', ['D5', 'B3']], [3.5, 0.45, 'strings', ['B4']],
+          [4.0, 0.9, 'woodwind', ['As4' in NOTE_FREQS ? 'Bb4' : 'Bb4', 'Fs3']], [5.0, 0.45, 'strings', ['B4']], [5.5, 0.45, 'strings', ['Cs5']], [6.0, 1.8, 'brass', ['B4', 'Fs3', 'B2']], [6.0, 0.8, 'timpani', ['B2']],
+          [8.0, 1.4, 'strings', ['G4', 'E3']], [9.5, 0.45, 'strings', ['B4']], [10.0, 1.4, 'strings', ['E5', 'G3']], [11.5, 0.45, 'strings', ['G5']],
+          [12.0, 0.9, 'woodwind', ['Fs5', 'D4']], [13.0, 0.45, 'strings', ['E5']], [13.5, 0.45, 'strings', ['D5']], [14.0, 1.8, 'brass', ['Cs5', 'Fs3']], [14.0, 0.8, 'timpani', ['Fs2']],
+          [16.0, 0.45, 'strings', ['D5']], [16.5, 0.45, 'strings', ['Cs5']], [17.0, 0.45, 'strings', ['B4']], [17.5, 0.45, 'strings', ['Bb4']], [18.0, 1.8, 'brass', ['B4', 'G3']],
+          [20.0, 0.45, 'strings', ['Cs5']], [20.5, 0.45, 'strings', ['B4']], [21.0, 0.45, 'strings', ['A4']], [21.5, 0.45, 'strings', ['Ab4']], [22.0, 1.8, 'woodwind', ['A4', 'Fs3']],
+          [24.0, 0.9, 'brass', ['B4', 'G3']], [25.0, 0.9, 'brass', ['G4', 'E3']], [26.0, 0.9, 'strings', ['Fs4', 'D3']], [27.0, 0.9, 'strings', ['E4', 'Cs3']],
+          [28.0, 1.8, 'brass', ['Fs4', 'Fs3', 'B2']], [30.0, 0.5, 'timpani', ['Fs2']], [31.0, 0.5, 'timpani', ['B2']],
+          // 화려하고 빠른 춤곡 클라이맥스
+          [32.0, 0.45, 'strings', ['B5', 'B3']], [32.5, 0.45, 'strings', ['Fs5']], [33.0, 0.45, 'strings', ['D5']], [33.5, 0.45, 'strings', ['B4']],
+          [34.0, 0.9, 'brass', ['Cs5', 'Fs3']], [35.0, 0.9, 'brass', ['Fs5', 'Bb3']],
+          [36.0, 0.45, 'strings', ['D5', 'B3']], [36.5, 0.45, 'strings', ['Fs5']], [37.0, 0.45, 'strings', ['B5']], [37.5, 0.45, 'strings', ['D6' in NOTE_FREQS ? 'C6' : 'B5']],
+          [38.0, 1.8, 'brass', ['B5', 'Fs4', 'B2']], [38.0, 1.0, 'timpani', ['B2']],
+          [40.0, 0.45, 'woodwind', ['G5']], [40.5, 0.45, 'woodwind', ['Fs5']], [41.0, 0.45, 'woodwind', ['E5']], [41.5, 0.45, 'woodwind', ['D5']],
+          [42.0, 0.9, 'brass', ['Cs5', 'Fs3']], [43.0, 0.9, 'brass', ['Bb4', 'Fs3']],
+          [44.0, 0.9, 'timpani', ['B2']], [45.0, 0.9, 'timpani', ['Fs2']],
+          [46.0, 2.5, 'brass', ['B4', 'Fs4', 'D4', 'B2']], [46.0, 2.5, 'strings', ['B5', 'Fs5', 'D5']], [46.0, 2.0, 'timpani', ['B2']]
+        ]
+      }
+    ];
+
+    class ViennaAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.master = null;
+        this.reverb = null;
+        this.previewTimers = [];
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+          this.master = this.ctx.createGain();
+          this.master.gain.value = 0.44;
+
+          this.reverb = this.ctx.createConvolver();
+          const rate = this.ctx.sampleRate;
+          const len = rate * 1.9;
+          const buf = this.ctx.createBuffer(2, len, rate);
+          for (let c = 0; c < 2; c++) {
+            const d = buf.getChannelData(c);
+            for (let i = 0; i < len; i++) {
+              d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4);
+            }
+          }
+          this.reverb.buffer = buf;
+
+          const dry = this.ctx.createGain();
+          dry.gain.value = 0.78;
+          const wet = this.ctx.createGain();
+          wet.gain.value = 0.34;
+
+          dry.connect(this.master);
+          this.reverb.connect(wet);
+          wet.connect(this.master);
+          this.master.connect(this.ctx.destination);
+
+          this.dry = dry;
+          this.wet = this.reverb;
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+
+      stopPreview() {
+        this.previewTimers.forEach((t) => clearTimeout(t));
+        this.previewTimers = [];
+      }
+
+      playPreview(song) {
+        this.init();
+        this.stopPreview();
+        const spb = 60 / song.bpm;
+        song.events.filter((e) => e[0] < 16).forEach(([beat, dur, sec, pitches]) => {
+          const t = setTimeout(() => this.playSection(sec, pitches, dur * spb), beat * spb * 1000);
+          this.previewTimers.push(t);
+        });
+      }
+
+      playSection(section, notes, dur) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        notes.forEach((name) => {
+          const freq = NOTE_FREQS[name];
+          if (!freq) return;
+
+          if (section === 'strings') {
+            [-5, 5].forEach((dt) => {
+              const osc = this.ctx.createOscillator();
+              const flt = this.ctx.createBiquadFilter();
+              const g = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, now);
+              osc.detune.setValueAtTime(dt, now);
+              flt.type = 'lowpass';
+              flt.frequency.setValueAtTime(2500, now);
+              g.gain.setValueAtTime(0.0001, now);
+              g.gain.linearRampToValueAtTime(0.08, now + Math.min(0.09, dur * 0.25));
+              g.gain.exponentialRampToValueAtTime(0.0001, now + dur + 0.12);
+              osc.connect(flt); flt.connect(g); g.connect(this.dry); g.connect(this.wet);
+              osc.start(now); osc.stop(now + dur + 0.15);
+            });
+          } else if (section === 'woodwind') {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(0.13, now + 0.05);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur + 0.1);
+            osc.connect(g); g.connect(this.dry); g.connect(this.wet);
+            osc.start(now); osc.stop(now + dur + 0.12);
+          } else if (section === 'brass') {
+            const osc = this.ctx.createOscillator();
+            const flt = this.ctx.createBiquadFilter();
+            const g = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now);
+            flt.type = 'lowpass';
+            flt.frequency.setValueAtTime(420, now);
+            flt.frequency.exponentialRampToValueAtTime(2400, now + 0.09);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(0.11, now + 0.06);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur + 0.1);
+            osc.connect(flt); flt.connect(g); g.connect(this.dry); g.connect(this.wet);
+            osc.start(now); osc.stop(now + dur + 0.12);
+          } else if (section === 'timpani') {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq * 1.4, now);
+            osc.frequency.exponentialRampToValueAtTime(freq, now + 0.08);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(0.3, now + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + Math.max(0.5, dur));
+            osc.connect(g); g.connect(this.dry); g.connect(this.wet);
+            osc.start(now); osc.stop(now + Math.max(0.55, dur + 0.05));
+          }
+        });
+      }
+
+      // 리듬 판정음 (우아한 하프시코드/차임벨 터치감)
+      playNoteHit(type, grade) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+
+        if (type === 'FLICK') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1960, now + 0.11);
+        } else if (type === 'CRITICAL') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(1318.5, now);
+        } else {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(grade === 'BRILLIANT' ? 1046.5 : 830.6, now);
+          osc.frequency.exponentialRampToValueAtTime(523.2, now + 0.06);
+        }
+
+        g.gain.setValueAtTime(0.16, now);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+        osc.connect(g);
+        g.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+
+      // 아이템 투척 및 명중 효과음
+      playThrowSFX(itemType, isImpact = false) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+
+        if (!isImpact) {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(680, now + 0.14);
+          g.gain.setValueAtTime(0.12, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(now); osc.stop(now + 0.17);
+          return;
+        }
+
+        if (itemType === 'baton') {
+          // 지휘봉 나무 '딱!' 타격음
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(780, now);
+          osc.frequency.exponentialRampToValueAtTime(190, now + 0.08);
+          g.gain.setValueAtTime(0.28, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(now); osc.stop(now + 0.11);
+        } else if (itemType === 'banana') {
+          // 슬라이드 휘슬 (휘이이익~ 뿅!)
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(550, now);
+          osc.frequency.exponentialRampToValueAtTime(1650, now + 0.18);
+          osc.frequency.exponentialRampToValueAtTime(280, now + 0.36);
+          g.gain.setValueAtTime(0.22, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(now); osc.stop(now + 0.4);
+        } else if (itemType === 'score_sheet') {
+          [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + idx * 0.04);
+            g.gain.setValueAtTime(0.11, now + idx * 0.04);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.04 + 0.25);
+            osc.connect(g); g.connect(this.ctx.destination);
+            osc.start(now + idx * 0.04); osc.stop(now + idx * 0.04 + 0.27);
+          });
+        } else if (itemType === 'rose') {
+          [659.25, 830.61, 987.77, 1318.5].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + idx * 0.05);
+            g.gain.setValueAtTime(0.14, now + idx * 0.05);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.05 + 0.4);
+            osc.connect(g); g.connect(this.ctx.destination);
+            osc.start(now + idx * 0.05); osc.stop(now + idx * 0.05 + 0.42);
+          });
+        } else if (itemType === 'tomato') {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
+          g.gain.setValueAtTime(0.28, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(now); osc.stop(now + 0.26);
+        } else if (itemType === 'champagne') {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(980, now + 0.07);
+          g.gain.setValueAtTime(0.32, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(now); osc.stop(now + 0.16);
+        }
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 2. 아이템 정의 및 근접 1인칭 오케스트라·관객 캐릭터 데이터베이스
+     * ============================================================================
+     */
+    const THROW_ITEMS = {
+      baton:       { id: 'baton',       name: '예비 지휘봉',   emoji: '🪄', color: '#b8893a', bonus: 400 },
+      banana:      { id: 'banana',      name: '바나나 껍질',   emoji: '🍌', color: '#eab308', bonus: 550 },
+      score_sheet: { id: 'score_sheet', name: '악보 뭉치',     emoji: '🎼', color: '#475569', bonus: 450 },
+      rose:        { id: 'rose',        name: '붉은 장미꽃',   emoji: '🌹', color: '#be123c', bonus: 600 },
+      tomato:      { id: 'tomato',      name: '잘 익은 토마토', emoji: '🍅', color: '#dc2626', bonus: 500 },
+      champagne:   { id: 'champagne',   name: '샴페인 코르크', emoji: '🍾', color: '#d97706', bonus: 750 }
+    };
+
+    function createHallCharacters() {
+      return [
+        // [전방 오케스트라 단원들 - 단상 바로 코앞 1열/2열]
+        { id: 'm_violin1', role: 'musician', name: '악장 바이올리니스트', instrument: 'violin', worldAngle: -26, distScale: 1.22, hair: '#3b2314', outfit: '#1c1917', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'm_cello1',  role: 'musician', name: '수석 첼리스트',       instrument: 'cello',  worldAngle: 26,  distScale: 1.22, hair: '#6b4423', outfit: '#1c1917', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'm_flute',   role: 'musician', name: '플루트 수석',         instrument: 'flute',  worldAngle: -10, distScale: 0.98, hair: '#8c5828', outfit: '#2a1a22', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'm_horn',    role: 'musician', name: '호른 연주자',         instrument: 'horn',   worldAngle: 11,  distScale: 0.98, hair: '#27201c', outfit: '#1c1917', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'm_timpani', role: 'musician', name: '팀파니 주자',         instrument: 'timpani',worldAngle: 0,   distScale: 0.86, hair: '#524b46', outfit: '#1c1917', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'm_violin2', role: 'musician', name: '제2바이올린',         instrument: 'violin', worldAngle: -44, distScale: 1.08, hair: '#4a2c18', outfit: '#291720', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'm_viola',   role: 'musician', name: '비올라 수석',         instrument: 'violin', worldAngle: 44,  distScale: 1.08, hair: '#2b1e16', outfit: '#1c1917', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+
+        // [좌·우측 귀빈석 관객]
+        { id: 'a_side_l',  role: 'audience', name: '좌측 귀빈석 백작',    prop: 'monocle', worldAngle: -82, distScale: 1.15, hair: '#78716c', outfit: '#581c24', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'a_side_r',  role: 'audience', name: '우측 귀빈석 공작부인', prop: 'fan',     worldAngle: 82,  distScale: 1.15, hair: '#9a3412', outfit: '#1e3a5f', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+
+        // [후방 1열 관객석 - 지휘자 바로 등 뒤 1열 관객들]
+        { id: 'a_rear_1',  role: 'audience', name: '오페라글라스 숙녀',   prop: 'glasses', worldAngle: -156, distScale: 1.25, hair: '#713f12', outfit: '#7f1d1d', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'a_rear_2',  role: 'audience', name: '졸고 있는 음악평론가', prop: 'sleepy',  worldAngle: 180,  distScale: 1.28, hair: '#9ca3af', outfit: '#292524', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'a_rear_3',  role: 'audience', name: '열혈 클래식 팬 청년', prop: 'bouquet', worldAngle: 155,  distScale: 1.25, hair: '#3f2312', outfit: '#1e293b', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'a_rear_4',  role: 'audience', name: '우아한 귀부인',       prop: 'fan',     worldAngle: -132, distScale: 1.10, hair: '#a16207', outfit: '#4c1d95', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 },
+        { id: 'a_rear_5',  role: 'audience', name: '박수치는 신사',       prop: 'clap',    worldAngle: 132,  distScale: 1.10, hair: '#44403c', outfit: '#1f2937', reaction: null, reactionTimer: 0, speech: '', spotlight: 0 }
+      ];
+    }
+
+    /**
+     * ============================================================================
+     * 3. 게임 상태 & 채보 빌더 (4레인: D, F, J, K)
+     * ============================================================================
+     */
+    const audio = new ViennaAudioEngine();
+    const canvas = document.getElementById('concertCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const LANE_KEYS = ['KeyD', 'KeyF', 'KeyJ', 'KeyK'];
+    const LANE_LABELS = ['D', 'F', 'J', 'K'];
+
+    const state = {
+      selectedSongId: 'beethoven5',
+      difficulty: '연주회',
+      laneCount: 4,
+      noteSpeed: 8.0,
+      mode: 'lobby', // 'lobby' | 'playing' | 'paused' | 'result' | 'explore'
+
+      // 1인칭 시점 카메라
+      camera: {
+        yaw: 0,
+        targetYaw: 0,
+        pitch: 0,
+        targetPitch: 0,
+        isDragging: false,
+        dragMoved: false,
+        startX: 0,
+        startY: 0,
+        startYaw: 0,
+        startPitch: 0
+      },
+
+      // 마우스 위치 추적 (1인칭 손의 미세한 VR 헤드/핸드 트래킹 반응용)
+      mousePos: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+
+      song: null,
+      notes: [],
+      triggeredAudio: new Set(),
+      startTime: 0,
+      pauseTime: 0,
+      totalPausedMs: 0,
+      currentBeat: -2.0,
+
+      lanePressed: [false, false, false, false],
+      laneFlash: [0, 0, 0, 0],
+      activeTouches: new Map(),
+
+      score: 0,
+      showmanshipScore: 0,
+      combo: 0,
+      maxCombo: 0,
+      harmony: 100,
+      stats: { BRILLIANT: 0, GRAZIOSO: 0, GOOD: 0, MISS: 0 },
+      throwCount: 0,
+
+      // 아이템 장착 및 포물선 투사체
+      equippedItemId: null,
+      projectiles: [],
+      particles: [],
+      floatingPopups: [],
+      lastJudgment: null,
+
+      // 1인칭 양손 지휘자 애니메이션 상태
+      batonSwingPhase: 0,
+      rightHandSnap: 0,       // 오른손 지휘봉 스냅 임펄스 (0~1)
+      rightHandTrail: [],     // 지휘봉 끝 황금빛 잔상 궤적
+      leftHandCueTimer: 0,    // 왼손 큐 사인 지시 타이머
+      leftHandCueDir: 0,      // 왼손이 가리키는 X 방향 (-1 ~ +1)
+      leftHandThrowAnim: 0,   // 왼손 아이템 투척 모션 타이머 (1 -> 0)
+      leftHandHoldLift: 0,    // 왼손 프레이즈 홀드(크레셴도) 상승 정도 (0~1)
+
+      bowPhase: 0,
+      characters: createHallCharacters(),
+      screenCharacterBoxes: [],
+      hoveredCharacter: null
+    };
+
+    function normalizeYaw(deg) {
+      return ((deg + 180) % 360 + 360) % 360 - 180;
+    }
+
+    function lerpAngle(a, b, t) {
+      const diff = normalizeYaw(b - a);
+      return normalizeYaw(a + diff * t);
+    }
+
+    function buildBeatmap(song, difficulty) {
+      const notes = [];
+      let id = 1;
+      const usedBeats = new Set();
+
+      song.events.forEach((ev, idx) => {
+        const [beat, dur, sec, pitches] = ev;
+        if (difficulty === '입문' && (beat * 2) % 2 !== 0 && idx % 2 === 1) return;
+
+        const key = beat.toFixed(2);
+        if (usedBeats.has(key)) return;
+        usedBeats.add(key);
+
+        const freq = NOTE_FREQS[pitches[0]] || 330;
+        let lane = Math.min(3, Math.max(0, Math.floor((Math.log2(freq / 110) / 3.4) * 4)));
+        if (notes.length > 0 && notes[notes.length - 1].lane === lane && dur < 1.2) {
+          lane = (lane + 1) % 4;
+        }
+
+        let type = 'TAP';
+        let holdDuration = 0;
+        if (dur >= 1.4 && beat < song.totalBeats - 2.5) {
+          type = 'HOLD';
+          holdDuration = Math.min(dur - 0.15, 2.0);
+        } else if (sec === 'timpani' || (sec === 'brass' && idx % 3 === 0)) {
+          type = 'FLICK';
+        } else if (idx % 4 === 0) {
+          type = 'CRITICAL';
+        }
+
+        notes.push({
+          id: id++,
+          lane,
+          beat,
+          type,
+          section: sec,
+          holdDuration,
+          hit: false,
+          missed: false,
+          holding: false,
+          holdCompleted: false,
+          lastTickBeat: beat
+        });
+
+        if (difficulty === '거장' && idx % 3 === 0 && type !== 'HOLD') {
+          notes.push({
+            id: id++,
+            lane: (lane + 2) % 4,
+            beat,
+            type: 'CRITICAL',
+            section: sec,
+            holdDuration: 0,
+            hit: false,
+            missed: false,
+            holding: false,
+            holdCompleted: false,
+            lastTickBeat: beat
+          });
+        }
+      });
+
+      return notes.sort((a, b) => a.beat - b.beat);
+    }
+
+    /**
+     * ============================================================================
+     * 4. UI 바인딩 및 로비 초기화
+     * ============================================================================
+     */
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function renderProgramList() {
+      const list = document.getElementById('songList');
+      list.innerHTML = '';
+      SONGS.forEach((s) => {
+        const isSel = s.id === state.selectedSongId;
+        const row = document.createElement('div');
+        row.className = `program-row rounded-2xl p-3.5 cursor-pointer flex items-center justify-between ${isSel ? 'selected' : ''}`;
+        row.innerHTML = `
+          <div>
+            <div class="text-[10px] font-cormorant font-bold tracking-widest text-[#8b1e24]">${s.composer}</div>
+            <div class="font-serif-kr font-bold text-sm sm:text-base text-[#2c1c12] mt-0.5">${s.title}</div>
+            <div class="text-[11px] text-[#6b4830] mt-0.5">${s.subtitle}</div>
+          </div>
+          <div class="text-right shrink-0 ml-2">
+            <span class="font-cormorant font-bold text-xs px-2.5 py-1 rounded-full bg-[#efe2c6] text-[#4a2a18] border border-[#b8893a]">
+              ♩ = ${s.bpm}
+            </span>
+          </div>
+        `;
+        row.addEventListener('click', () => {
+          state.selectedSongId = s.id;
+          renderProgramList();
+        });
+        list.appendChild(row);
+      });
+    }
+    renderProgramList();
+
+    // 난이도 선택 버튼
+    document.querySelectorAll('.diff-choice').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.difficulty = btn.dataset.diff;
+        document.querySelectorAll('.diff-choice').forEach((b) => {
+          b.classList.remove('royal-btn');
+          b.classList.add('gold-outline-btn');
+        });
+        btn.classList.remove('gold-outline-btn');
+        btn.classList.add('royal-btn');
+      });
+    });
+
+    // 속도 슬라이더
+    document.getElementById('speedSlider').addEventListener('input', (e) => {
+      state.noteSpeed = parseFloat(e.target.value);
+      document.getElementById('speedDisplay').textContent = state.noteSpeed.toFixed(1);
+    });
+
+    // 미리듣기
+    document.getElementById('btnPreview').addEventListener('click', () => {
+      const s = SONGS.find((x) => x.id === state.selectedSongId) || SONGS[0];
+      audio.playPreview(s);
+    });
+
+    // 시점 프리셋 버튼
+    document.querySelectorAll('.cam-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.camera.targetYaw = parseFloat(btn.dataset.yaw);
+        state.camera.targetPitch = 0;
+      });
+    });
+
+    /**
+     * ============================================================================
+     * 5. 좌·우 하단 원형 아이템 장착 & 투척 시스템 (왼손 투척 액팅 연동)
+     * ============================================================================
+     */
+    function equipItem(itemId) {
+      if (state.equippedItemId === itemId) {
+        quickThrowToCenter(itemId);
+        return;
+      }
+
+      state.equippedItemId = itemId;
+      updateItemSlotsUI();
+
+      const item = THROW_ITEMS[itemId];
+      if (item) {
+        const banner = document.getElementById('throwBanner');
+        document.getElementById('throwBannerIcon').textContent = item.emoji;
+        document.getElementById('throwBannerText').textContent = `[${item.name}] 장착! 연주자나 관객을 클릭해 던지세요 (아이콘 재클릭 시 중앙 인물에 즉시 투척)`;
+        banner.classList.remove('opacity-0');
+        banner.classList.add('opacity-100');
+      }
+    }
+
+    function clearEquippedItem() {
+      state.equippedItemId = null;
+      updateItemSlotsUI();
+      const banner = document.getElementById('throwBanner');
+      banner.classList.add('opacity-0');
+      banner.classList.remove('opacity-100');
+    }
+
+    function updateItemSlotsUI() {
+      document.querySelectorAll('.item-orb').forEach((el) => {
+        if (el.dataset.item === state.equippedItemId) {
+          el.classList.add('equipped');
+        } else {
+          el.classList.remove('equipped');
+        }
+      });
+    }
+
+    document.querySelectorAll('.item-orb').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        equipItem(btn.dataset.item);
+      });
+    });
+
+    function quickThrowToCenter(itemId) {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight * 0.45;
+      let bestBox = null;
+      let bestDist = Infinity;
+
+      for (const box of state.screenCharacterBoxes) {
+        const d = Math.hypot(box.x - cx, box.y - cy);
+        if (d < bestDist) {
+          bestDist = d;
+          bestBox = box;
+        }
+      }
+
+      if (bestBox) {
+        launchProjectile(itemId, bestBox.x, bestBox.y - 35, bestBox.char);
+      } else {
+        launchProjectile(itemId, cx, cy, null);
+      }
+      clearEquippedItem();
+    }
+
+    function launchProjectile(itemId, targetX, targetY, targetChar) {
+      audio.init();
+      audio.playThrowSFX(itemId, false);
+
+      // 지휘자 왼손 위치에서 투사체가 출발하며, 왼손이 역동적으로 던지는 모션 실행!
+      const startX = window.innerWidth * 0.28;
+      const startY = window.innerHeight * 0.78;
+      state.leftHandThrowAnim = 1.0;
+
+      state.projectiles.push({
+        itemId,
+        startX,
+        startY,
+        targetX,
+        targetY,
+        targetChar,
+        progress: 0,
+        duration: 0.46,
+        spin: 0
+      });
+    }
+
+    function resolveProjectileImpact(proj) {
+      const item = THROW_ITEMS[proj.itemId];
+      if (!item) return;
+
+      audio.playThrowSFX(proj.itemId, true);
+      state.throwCount++;
+      state.showmanshipScore += item.bonus;
+      state.score += item.bonus;
+      state.harmony = Math.min(100, state.harmony + 4);
+      updateHudUI();
+
+      // 파티클 생성
+      const pCount = proj.itemId === 'champagne' ? 30 : 18;
+      for (let i = 0; i < pCount; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 2 + Math.random() * 5.5;
+        state.particles.push({
+          x: proj.targetX,
+          y: proj.targetY,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 2.5,
+          size: 3 + Math.random() * 4,
+          life: 1.0,
+          color: proj.itemId === 'rose' ? '#e11d48' : proj.itemId === 'banana' ? '#facc15' : proj.itemId === 'tomato' ? '#ef4444' : '#d4a348',
+          emoji: proj.itemId === 'rose' && i % 3 === 0 ? '🌸' : proj.itemId === 'score_sheet' && i % 3 === 0 ? '📄' : proj.itemId === 'champagne' && i % 4 === 0 ? '✨' : null
+        });
+      }
+
+      const char = proj.targetChar;
+      if (char) {
+        char.reaction = proj.itemId;
+        char.reactionTimer = 2.6;
+
+        if (proj.itemId === 'baton') {
+          char.speech = char.role === 'musician' ? '딱! 알겠습니다, 마에스트로!' : '앗! 예비 지휘봉이 날아왔다!';
+        } else if (proj.itemId === 'banana') {
+          char.speech = '우와아악! 바나나 껍질이다!! 💫';
+        } else if (proj.itemId === 'score_sheet') {
+          char.speech = '악보가 눈앞에 팔랑팔랑~! 📄';
+        } else if (proj.itemId === 'rose') {
+          char.speech = char.role === 'musician' ? '브라보! 감동적인 장미예요 ♥' : '어머나, 마에스트로의 선물! ♥';
+        } else if (proj.itemId === 'tomato') {
+          char.speech = char.prop === 'sleepy' ? '쿨쿨... 억! 잠이 확 깼습니다!! 🍅' : '철퍽! 코믹한 토마토 세례라니!!';
+        } else if (proj.itemId === 'champagne') {
+          char.speech = '브라보!! 축배를 듭시다!! 🥂';
+        }
+
+        state.floatingPopups.push({
+          x: proj.targetX,
+          y: proj.targetY - 60,
+          text: `${item.emoji} ${char.name} 명중! +${item.bonus}`,
+          color: '#8b1e24',
+          life: 1.25
+        });
+      } else {
+        state.floatingPopups.push({
+          x: proj.targetX,
+          y: proj.targetY - 30,
+          text: `${item.emoji} 화려한 무대 연출! +${item.bonus}`,
+          color: '#8b1e24',
+          life: 1.15
+        });
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 6. 공연 시작 / 일시정지 / 종료 흐름
+     * ============================================================================
+     */
+    function startConcert(exploreOnly = false) {
+      audio.init();
+      audio.stopPreview();
+
+      const song = SONGS.find((s) => s.id === state.selectedSongId) || SONGS[0];
+      state.song = song;
+      state.mode = exploreOnly ? 'explore' : 'playing';
+      state.notes = exploreOnly ? [] : buildBeatmap(song, state.difficulty);
+      state.triggeredAudio.clear();
+
+      state.startTime = performance.now();
+      state.totalPausedMs = 0;
+      state.currentBeat = -2.0;
+
+      state.score = 0;
+      state.showmanshipScore = 0;
+      state.combo = 0;
+      state.maxCombo = 0;
+      state.harmony = 100;
+      state.stats = { BRILLIANT: 0, GRAZIOSO: 0, GOOD: 0, MISS: 0 };
+      state.throwCount = 0;
+      state.projectiles = [];
+      state.particles = [];
+      state.floatingPopups = [];
+      state.lastJudgment = null;
+      state.rightHandTrail = [];
+      state.characters = createHallCharacters();
+      clearEquippedItem();
+
+      document.getElementById('hudSongTitle').textContent = song.title;
+      document.getElementById('hudTempoBadge').textContent = exploreOnly ? '연습 모드' : state.difficulty;
+      updateHudUI();
+
+      document.getElementById('lobbyModal').classList.add('hidden');
+      document.getElementById('pauseModal').classList.add('hidden');
+      document.getElementById('pauseModal').classList.remove('flex');
+      document.getElementById('resultModal').classList.add('hidden');
+      document.getElementById('resultModal').classList.remove('flex');
+    }
+
+    function pauseConcert() {
+      if (state.mode !== 'playing' && state.mode !== 'explore') return;
+      state.prevMode = state.mode;
+      state.mode = 'paused';
+      state.pauseTime = performance.now();
+      const m = document.getElementById('pauseModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function resumeConcert() {
+      if (state.mode !== 'paused') return;
+      state.totalPausedMs += performance.now() - state.pauseTime;
+      state.mode = state.prevMode || 'playing';
+      const m = document.getElementById('pauseModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    function finishConcert() {
+      if (state.mode === 'explore') {
+        state.startTime = performance.now();
+        state.triggeredAudio.clear();
+        return;
+      }
+
+      state.mode = 'result';
+      const total = Math.max(1, state.notes.length);
+      const acc = (state.stats.BRILLIANT * 1.0 + state.stats.GRAZIOSO * 0.75 + state.stats.GOOD * 0.4) / total;
+
+      let rank = 'C';
+      let titleText = '열정적인 신예 지휘자';
+      if (acc >= 0.9 && state.stats.MISS === 0) {
+        rank = 'S';
+        titleText = '✦ 빈 필하모닉 전설의 마에스트로';
+      } else if (acc >= 0.78) {
+        rank = 'A';
+        titleText = '★ 황금 홀의 비르투오소 지휘자';
+      } else if (acc >= 0.6) {
+        rank = 'B';
+        titleText = '♪ 숙련된 콘서트마스터';
+      }
+
+      document.getElementById('resSongTitle').textContent = state.song.title;
+      document.getElementById('resRank').textContent = rank;
+      document.getElementById('resScore').textContent = state.score.toLocaleString();
+      document.getElementById('resTitleRank').textContent = titleText;
+      document.getElementById('resPerfect').textContent = state.stats.BRILLIANT;
+      document.getElementById('resGreat').textContent = state.stats.GRAZIOSO;
+      document.getElementById('resCombo').textContent = state.maxCombo;
+      document.getElementById('resThrows').textContent = `${state.throwCount}회`;
+
+      const m = document.getElementById('resultModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    document.getElementById('btnStartConcert').addEventListener('click', () => startConcert(false));
+    document.getElementById('btnExploreHall').addEventListener('click', () => startConcert(true));
+    document.getElementById('btnPause').addEventListener('click', pauseConcert);
+    document.getElementById('btnResume').addEventListener('click', resumeConcert);
+    document.getElementById('btnRestart').addEventListener('click', () => startConcert(state.prevMode === 'explore'));
+    document.getElementById('btnToLobby').addEventListener('click', () => {
+      state.mode = 'lobby';
+      document.getElementById('pauseModal').classList.add('hidden');
+      document.getElementById('pauseModal').classList.remove('flex');
+      document.getElementById('lobbyModal').classList.remove('hidden');
+    });
+    document.getElementById('btnRetryResult').addEventListener('click', () => startConcert(false));
+    document.getElementById('btnLobbyResult').addEventListener('click', () => {
+      state.mode = 'lobby';
+      document.getElementById('resultModal').classList.add('hidden');
+      document.getElementById('resultModal').classList.remove('flex');
+      document.getElementById('lobbyModal').classList.remove('hidden');
+    });
+
+    function updateHudUI() {
+      document.getElementById('hudScore').textContent = state.score.toLocaleString();
+      document.getElementById('hudShowmanship').textContent = `+${state.showmanshipScore.toLocaleString()} pts`;
+      const hVal = Math.round(state.harmony);
+      document.getElementById('hudHarmonyVal').textContent = `${hVal}%`;
+      document.getElementById('hudHarmonyBar').style.width = `${hVal}%`;
+
+      const processed = Math.max(1, state.stats.BRILLIANT + state.stats.GRAZIOSO + state.stats.GOOD + state.stats.MISS);
+      const ratio = (state.stats.BRILLIANT + state.stats.GRAZIOSO * 0.75 + state.stats.GOOD * 0.4) / processed;
+      document.getElementById('hudGrade').textContent = ratio >= 0.9 ? 'S' : ratio >= 0.78 ? 'A' : ratio >= 0.6 ? 'B' : 'C';
+    }
+
+    /**
+     * ============================================================================
+     * 7. 지휘자 보면대(Music Stand) 3D 원근 악보 트랙 기하학 & 입력 판정
+     * ============================================================================
+     */
+    function getSheetGeometry() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const cx = w / 2;
+      const isExplore = state.mode === 'explore';
+
+      // 지휘자 전경 양손 바로 위/중앙에 놓인 호두나무 & 황동 보면대 영역
+      const topY = h * 0.50;
+      const judgeY = h * 0.81;
+      const bottomY = h * 0.88;
+
+      const bottomHalfW = Math.min(w * 0.27, 195);
+      const topHalfW = bottomHalfW * 0.50;
+
+      return { w, h, cx, topY, judgeY, bottomY, topHalfW, bottomHalfW, isExplore };
+    }
+
+    function projectNotePoint(laneIdx, progress, geo) {
+      const p = Math.max(0, Math.min(1.15, progress));
+      const persp = Math.pow(p, 1.38);
+      const y = geo.topY + (geo.judgeY - geo.topY) * persp;
+      const halfW = geo.topHalfW + (geo.bottomHalfW - geo.topHalfW) * persp;
+      const laneW = (halfW * 2) / 4;
+      const centerX = geo.cx - halfW + (laneIdx + 0.5) * laneW;
+      return { x: centerX, y, laneW, scale: 0.48 + 0.52 * persp };
+    }
+
+    function hitTestSheetLane(px, py) {
+      const geo = getSheetGeometry();
+      if (geo.isExplore) return -1;
+      if (py < geo.topY || py > geo.bottomY + 12) return -1;
+
+      const t = Math.max(0, Math.min(1, (py - geo.topY) / (geo.judgeY - geo.topY)));
+      const halfW = geo.topHalfW + (geo.bottomHalfW - geo.topHalfW) * t;
+      if (px < geo.cx - halfW - 14 || px > geo.cx + halfW + 14) return -1;
+
+      const norm = Math.max(0, Math.min(0.999, (px - (geo.cx - halfW)) / (halfW * 2)));
+      return Math.floor(norm * 4);
+    }
+
+    function triggerInstrumentCueSpotlight(section) {
+      // 큐(Cue) 노트 히트 시 해당 파트의 연주자에게 스포트라이트 & 반응 유도
+      const targetMap = {
+        strings: ['m_violin1', 'm_cello1'],
+        woodwind: ['m_flute'],
+        brass: ['m_horn'],
+        timpani: ['m_timpani']
+      };
+      const ids = targetMap[section] || ['m_violin1'];
+      state.characters.forEach((c) => {
+        if (ids.includes(c.id)) {
+          c.spotlight = 1.5;
+          c.reaction = 'cue';
+          c.reactionTimer = 1.2;
+          c.speech = '큐 사인 확인! ♪';
+        }
+      });
+    }
+
+    function pressLane(lane) {
+      if (lane < 0 || lane >= 4) return;
+      state.lanePressed[lane] = true;
+      state.laneFlash[lane] = 1.0;
+
+      // 오른손 지휘봉 역동적인 스냅
+      state.rightHandSnap = 1.0;
+
+      if (state.mode !== 'playing') return;
+
+      const spb = 60 / state.song.bpm;
+      let target = null;
+      let minDiff = Infinity;
+
+      for (const n of state.notes) {
+        if (n.lane !== lane || n.hit || n.missed) continue;
+        const diff = Math.abs((n.beat - state.currentBeat) * spb);
+        if (diff <= 0.19 && diff < minDiff) {
+          minDiff = diff;
+          target = n;
+        }
+      }
+
+      if (!target) {
+        audio.playNoteHit('TAP', 'GOOD');
+        return;
+      }
+
+      let grade = 'GOOD';
+      if (minDiff <= 0.06) grade = 'BRILLIANT';
+      else if (minDiff <= 0.12) grade = 'GRAZIOSO';
+
+      target.hit = true;
+      if (target.type === 'HOLD') {
+        target.holding = true;
+        target.lastTickBeat = state.currentBeat;
+      } else if (target.type === 'FLICK') {
+        // 큐(Cue) 플릭 노트: 왼손으로 악기 파트를 가리키는 지시 제스처 + 파트 조명!
+        state.leftHandCueTimer = 0.85;
+        state.leftHandCueDir = (lane - 1.5) * 0.65;
+        triggerInstrumentCueSpotlight(target.section);
+      }
+
+      scoreNoteJudgment(grade, target, lane);
+      audio.playNoteHit(target.type, grade);
+    }
+
+    function releaseLane(lane) {
+      if (lane < 0 || lane >= 4) return;
+      state.lanePressed[lane] = false;
+
+      if (state.mode !== 'playing') return;
+      for (const n of state.notes) {
+        if (n.lane === lane && n.holding && !n.holdCompleted) {
+          n.holding = false;
+          n.holdCompleted = true;
+          scoreNoteJudgment('BRILLIANT', n, lane, true);
+        }
+      }
+    }
+
+    function scoreNoteJudgment(grade, note, lane, isHoldTail = false) {
+      const geo = getSheetGeometry();
+      const pt = projectNotePoint(lane, 1.0, geo);
+
+      if (grade === 'MISS') {
+        state.stats.MISS++;
+        state.combo = 0;
+        state.harmony = Math.max(0, state.harmony - 4);
+        state.lastJudgment = { text: 'MISS', color: '#78716c', alpha: 1.0, scale: 1.1 };
+        updateHudUI();
+        return;
+      }
+
+      if (!isHoldTail) state.stats[grade]++;
+      state.combo++;
+      if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+
+      const base = grade === 'BRILLIANT' ? 1000 : grade === 'GRAZIOSO' ? 700 : 400;
+      const mult = note.type === 'CRITICAL' ? 2.0 : note.type === 'FLICK' ? 1.5 : 1.0;
+      state.score += Math.round(base * mult * (1 + Math.min(0.4, state.combo * 0.005)));
+      state.harmony = Math.min(100, state.harmony + 1.5);
+
+      const colors = { BRILLIANT: '#8b1e24', GRAZIOSO: '#b8893a', GOOD: '#3f7d44' };
+      const label = note.type === 'CRITICAL' && grade === 'BRILLIANT' ? 'FORTE BRILLIANT!' : grade;
+      state.lastJudgment = { text: label, color: colors[grade], alpha: 1.0, scale: 1.25 };
+
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI * Math.random();
+        const s = 2 + Math.random() * 4;
+        state.particles.push({
+          x: pt.x + (Math.random() - 0.5) * pt.laneW * 0.6,
+          y: geo.judgeY,
+          vx: Math.cos(a) * s,
+          vy: Math.sin(a) * s - 1,
+          size: 3,
+          life: 1.0,
+          color: note.type === 'CRITICAL' ? '#d4a348' : '#8b1e24',
+          emoji: null
+        });
+      }
+
+      updateHudUI();
+    }
+
+    /**
+     * ============================================================================
+     * 8. 통합 입력 이벤트 (키보드 리듬키 + 아이템 단축키 + 캐릭터 클릭 투척 + 360° 드래그)
+     * ============================================================================
+     */
+    const keysHeld = new Set();
+    const ITEM_HOTKEYS = {
+      'Digit1': 'baton',
+      'Digit2': 'banana',
+      'Digit3': 'score_sheet',
+      'Digit8': 'rose',
+      'Digit9': 'tomato',
+      'Digit0': 'champagne'
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if (keysHeld.has(e.code)) return;
+      keysHeld.add(e.code);
+
+      if (ITEM_HOTKEYS[e.code]) {
+        e.preventDefault();
+        equipItem(ITEM_HOTKEYS[e.code]);
+        return;
+      }
+
+      const idx = LANE_KEYS.indexOf(e.code);
+      if (idx !== -1) {
+        e.preventDefault();
+        pressLane(idx);
+      } else if (e.code === 'Escape') {
+        if (state.equippedItemId) {
+          clearEquippedItem();
+        } else if (state.mode === 'playing' || state.mode === 'explore') {
+          pauseConcert();
+        } else if (state.mode === 'paused') {
+          resumeConcert();
+        }
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keysHeld.delete(e.code);
+      const idx = LANE_KEYS.indexOf(e.code);
+      if (idx !== -1) releaseLane(idx);
+    });
+
+    function findCharacterAt(px, py) {
+      for (let i = state.screenCharacterBoxes.length - 1; i >= 0; i--) {
+        const b = state.screenCharacterBoxes[i];
+        if (px >= b.x - b.halfW && px <= b.x + b.halfW && py >= b.y - b.height && py <= b.y + 20) {
+          return b;
+        }
+      }
+      return null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const px = e.clientX;
+      const py = e.clientY;
+
+      if (state.equippedItemId) {
+        const hitChar = findCharacterAt(px, py);
+        launchProjectile(state.equippedItemId, px, py, hitChar ? hitChar.char : null);
+        clearEquippedItem();
+        return;
+      }
+
+      const lane = hitTestSheetLane(px, py);
+      if (lane !== -1) {
+        state.mouseLane = lane;
+        pressLane(lane);
+        return;
+      }
+
+      state.camera.isDragging = true;
+      state.camera.dragMoved = false;
+      state.camera.startX = px;
+      state.camera.startY = py;
+      state.camera.startYaw = state.camera.targetYaw;
+      state.camera.startPitch = state.camera.targetPitch;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      state.mousePos.x = e.clientX;
+      state.mousePos.y = e.clientY;
+
+      // 캐릭터 호버 감지 (조준 레티클 표시용)
+      const hitBox = findCharacterAt(e.clientX, e.clientY);
+      state.hoveredCharacter = hitBox ? hitBox.char : null;
+
+      if (!state.camera.isDragging) return;
+      const dx = e.clientX - state.camera.startX;
+      const dy = e.clientY - state.camera.startY;
+      if (Math.hypot(dx, dy) > 5) state.camera.dragMoved = true;
+
+      state.camera.targetYaw = normalizeYaw(state.camera.startYaw - dx * 0.35);
+      state.camera.targetPitch = Math.max(-18, Math.min(18, state.camera.startPitch - dy * 0.14));
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (state.mouseLane !== undefined && state.mouseLane !== -1) {
+        releaseLane(state.mouseLane);
+        state.mouseLane = -1;
+      }
+
+      if (state.camera.isDragging && !state.camera.dragMoved) {
+        const hitChar = findCharacterAt(e.clientX, e.clientY);
+        if (hitChar) {
+          hitChar.char.reaction = 'greet';
+          hitChar.char.reactionTimer = 1.6;
+          hitChar.char.speech = hitChar.char.role === 'musician' ? '네, 마에스트로! ♪' : '브라보! 멋진 지휘입니다!';
+        }
+      }
+      state.camera.isDragging = false;
+    });
+
+    // 모바일/태블릿 멀티터치 지원 (위로 플릭 제스처 포함)
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        state.mousePos.x = t.clientX;
+        state.mousePos.y = t.clientY;
+
+        if (state.equippedItemId) {
+          const hitChar = findCharacterAt(t.clientX, t.clientY);
+          launchProjectile(state.equippedItemId, t.clientX, t.clientY, hitChar ? hitChar.char : null);
+          clearEquippedItem();
+          return;
+        }
+
+        const lane = hitTestSheetLane(t.clientX, t.clientY);
+        if (lane !== -1) {
+          state.activeTouches.set(t.identifier, { lane, startY: t.clientY, flicked: false });
+          pressLane(lane);
+        } else {
+          state.camera.isDragging = true;
+          state.camera.startX = t.clientX;
+          state.camera.startY = t.clientY;
+          state.camera.startYaw = state.camera.targetYaw;
+          state.camera.startPitch = state.camera.targetPitch;
+        }
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        const info = state.activeTouches.get(t.identifier);
+        if (info) {
+          if (!info.flicked && info.startY - t.clientY > 22) {
+            info.flicked = true;
+            state.rightHandSnap = 1.0;
+            audio.playNoteHit('FLICK', 'BRILLIANT');
+          }
+        } else if (state.camera.isDragging) {
+          const dx = t.clientX - state.camera.startX;
+          const dy = t.clientY - state.camera.startY;
+          state.camera.targetYaw = normalizeYaw(state.camera.startYaw - dx * 0.42);
+          state.camera.targetPitch = Math.max(-18, Math.min(18, state.camera.startPitch - dy * 0.16));
+        }
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        const info = state.activeTouches.get(t.identifier);
+        if (info) {
+          releaseLane(info.lane);
+          state.activeTouches.delete(t.identifier);
+        } else {
+          state.camera.isDragging = false;
+        }
+      }
+    });
+
+    /**
+     * ============================================================================
+     * 9. 게임 상태 업데이트 루프
+     * ============================================================================
+     */
+    function update(now, dt) {
+      if (keysHeld.has('ArrowLeft')) {
+        state.camera.targetYaw = normalizeYaw(state.camera.targetYaw - 115 * dt);
+      }
+      if (keysHeld.has('ArrowRight')) {
+        state.camera.targetYaw = normalizeYaw(state.camera.targetYaw + 115 * dt);
+      }
+
+      state.camera.yaw = lerpAngle(state.camera.yaw, state.camera.targetYaw, Math.min(1, dt * 10));
+      state.camera.pitch += (state.camera.targetPitch - state.camera.pitch) * Math.min(1, dt * 10);
+
+      // 상단 시선 나침반 갱신
+      const yawInt = Math.round(state.camera.yaw);
+      const absYaw = Math.abs(yawInt);
+      let viewLabel = '오케스트라 정면';
+      if (absYaw > 130) viewLabel = '뒤쪽 관객석';
+      else if (yawInt <= -45) viewLabel = '좌측 귀빈석';
+      else if (yawInt >= 45) viewLabel = '우측 귀빈석';
+      document.getElementById('hudYawText').textContent = `${yawInt > 0 ? '+' + yawInt : yawInt}° · ${viewLabel}`;
+      document.getElementById('hudYawPin').style.left = `${((state.camera.yaw + 180) / 360) * 100}%`;
+
+      // 양손 지휘 액팅 타이머 감쇠
+      for (let i = 0; i < 4; i++) {
+        if (state.laneFlash[i] > 0) state.laneFlash[i] = Math.max(0, state.laneFlash[i] - dt * 5);
+      }
+      state.rightHandSnap = Math.max(0, state.rightHandSnap - dt * 4.5);
+      state.leftHandCueTimer = Math.max(0, state.leftHandCueTimer - dt);
+      state.leftHandThrowAnim = Math.max(0, state.leftHandThrowAnim - dt * 2.6);
+
+      // 홀드 노트가 하나라도 유지 중이면 왼손 크레셴도 상승
+      const isAnyHolding = state.notes.some((n) => n.holding && !n.holdCompleted);
+      const targetHoldLift = isAnyHolding ? 1.0 : 0.0;
+      state.leftHandHoldLift += (targetHoldLift - state.leftHandHoldLift) * Math.min(1, dt * 10);
+
+      // 지휘봉 잔상 궤적 수명 감소
+      for (let i = state.rightHandTrail.length - 1; i >= 0; i--) {
+        state.rightHandTrail[i].life -= dt * 4.2;
+        if (state.rightHandTrail[i].life <= 0) state.rightHandTrail.splice(i, 1);
+      }
+
+      for (let i = state.projectiles.length - 1; i >= 0; i--) {
+        const p = state.projectiles[i];
+        p.progress += dt / p.duration;
+        p.spin += dt * 16;
+        if (p.progress >= 1.0) {
+          resolveProjectileImpact(p);
+          state.projectiles.splice(i, 1);
+        }
+      }
+
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const pt = state.particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.vy += 0.14;
+        pt.life -= dt * 1.7;
+        if (pt.life <= 0) state.particles.splice(i, 1);
+      }
+
+      for (let i = state.floatingPopups.length - 1; i >= 0; i--) {
+        const fp = state.floatingPopups[i];
+        fp.y -= dt * 32;
+        fp.life -= dt * 1.05;
+        if (fp.life <= 0) state.floatingPopups.splice(i, 1);
+      }
+
+      if (state.lastJudgment) {
+        state.lastJudgment.scale += (1.0 - state.lastJudgment.scale) * Math.min(1, dt * 15);
+        state.lastJudgment.alpha -= dt * 1.5;
+        if (state.lastJudgment.alpha <= 0) state.lastJudgment = null;
+      }
+
+      state.characters.forEach((c) => {
+        if (c.spotlight > 0) c.spotlight = Math.max(0, c.spotlight - dt);
+        if (c.reactionTimer > 0) {
+          c.reactionTimer = Math.max(0, c.reactionTimer - dt);
+          if (c.reactionTimer === 0) {
+            c.reaction = null;
+            c.speech = '';
+          }
+        }
+      });
+
+      if (state.mode !== 'playing' && state.mode !== 'explore') {
+        state.bowPhase += dt * 2.6;
+        state.batonSwingPhase += dt * 2.6;
+        return;
+      }
+
+      const song = state.song;
+      const spb = 60 / song.bpm;
+      const elapsed = (now - state.startTime - state.totalPausedMs) / 1000;
+      const currentBeat = -2.0 + elapsed / spb;
+      state.currentBeat = currentBeat;
+
+      state.bowPhase += dt * (song.bpm / 30) * Math.PI;
+      state.batonSwingPhase += dt * (song.bpm / 30) * Math.PI;
+
+      const pct = Math.max(0, Math.min(100, (currentBeat / song.totalBeats) * 100));
+      document.getElementById('hudProgress').style.width = `${pct}%`;
+
+      // 오케스트라 악곡 이벤트 재생
+      song.events.forEach((ev, idx) => {
+        if (!state.triggeredAudio.has(idx) && currentBeat >= ev[0]) {
+          state.triggeredAudio.add(idx);
+          audio.playSection(ev[2], ev[3], ev[1] * spb);
+        }
+      });
+
+      if (state.mode === 'playing') {
+        for (const n of state.notes) {
+          if (n.holding && !n.holdCompleted) {
+            if (currentBeat - n.lastTickBeat >= 0.5) {
+              n.lastTickBeat = currentBeat;
+              state.combo++;
+              state.score += 200;
+              updateHudUI();
+            }
+            if (currentBeat >= n.beat + n.holdDuration) {
+              n.holding = false;
+              n.holdCompleted = true;
+              scoreNoteJudgment('BRILLIANT', n, n.lane, true);
+            }
+          }
+          if (!n.hit && !n.missed && (currentBeat - n.beat) * spb > 0.19) {
+            n.missed = true;
+            scoreNoteJudgment('MISS', n, n.lane);
+          }
+        }
+      }
+
+      if (currentBeat >= song.totalBeats + 1.8) {
+        finishConcert();
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 10. 밝고 화사한 빈(Vienna) 클래식 대극장 & 큼직한 1인칭 인물 렌더링
+     * ============================================================================
+     */
+    function renderHallAndPeople(w, h) {
+      const yaw = state.camera.yaw;
+      const pitchOff = state.camera.pitch * 4.5;
+      const horizonY = h * 0.43 + pitchOff;
+      const fov = 92;
+
+      // 1. 밝고 따뜻한 대리석 아치 벽면 & 천장 샹들리에 홀 배경
+      const wallGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+      wallGrad.addColorStop(0, '#efe2c6');
+      wallGrad.addColorStop(0.55, '#faf4e6');
+      wallGrad.addColorStop(1, '#f3e5c8');
+      ctx.fillStyle = wallGrad;
+      ctx.fillRect(0, 0, w, horizonY);
+
+      // 따뜻한 황금 햇살 확산광
+      const sunGlow = ctx.createRadialGradient(w * 0.5, horizonY * 0.35, 30, w * 0.5, horizonY * 0.5, w * 0.65);
+      sunGlow.addColorStop(0, 'rgba(255, 248, 220, 0.94)');
+      sunGlow.addColorStop(0.6, 'rgba(247, 226, 178, 0.38)');
+      sunGlow.addColorStop(1, 'rgba(247, 226, 178, 0)');
+      ctx.fillStyle = sunGlow;
+      ctx.fillRect(0, 0, w, horizonY);
+
+      // 바닥: 광택 나는 밝은 호두나무 콘서트홀 마루
+      const floorGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+      floorGrad.addColorStop(0, '#d8b98a');
+      floorGrad.addColorStop(0.45, '#b68952');
+      floorGrad.addColorStop(1, '#7c502b');
+      ctx.fillStyle = floorGrad;
+      ctx.fillRect(0, horizonY, w, h - horizonY);
+
+      function projectAngle(worldDeg) {
+        const diff = normalizeYaw(worldDeg - yaw);
+        if (Math.abs(diff) > fov * 0.85) return null;
+        return w / 2 + (diff / (fov / 2)) * (w / 2);
+      }
+
+      // 2. 고전 코린트식 황금 기둥 & 2층 크림슨 발코니 박스석 & 샹들리에
+      for (let deg = -180; deg < 180; deg += 20) {
+        const sx = projectAngle(deg);
+        if (sx === null) continue;
+
+        ctx.fillStyle = '#e7d4b0';
+        ctx.fillRect(sx - 10, horizonY - h * 0.38, 20, h * 0.4);
+        ctx.strokeStyle = '#b8893a';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(sx - 10, horizonY - h * 0.38, 20, h * 0.4);
+
+        if (deg % 40 === 0) {
+          const cy = horizonY - h * 0.32;
+          const cg = ctx.createRadialGradient(sx, cy, 4, sx, cy, 48);
+          cg.addColorStop(0, 'rgba(255, 252, 230, 0.95)');
+          cg.addColorStop(0.5, 'rgba(232, 185, 86, 0.35)');
+          cg.addColorStop(1, 'rgba(232, 185, 86, 0)');
+          ctx.fillStyle = cg;
+          ctx.beginPath();
+          ctx.arc(sx, cy, 48, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#d4a348';
+          ctx.beginPath();
+          ctx.arc(sx, cy, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (Math.abs(deg) > 55) {
+          ctx.fillStyle = '#8b1e24';
+          ctx.fillRect(sx - 48, horizonY - h * 0.16, 96, 26);
+          ctx.strokeStyle = '#d4a348';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(sx - 48, horizonY - h * 0.16, 96, 26);
+        }
+      }
+
+      // 3. [정면 0° 배경] 황금 파이프 오르간
+      const organX = projectAngle(0);
+      if (organX !== null) {
+        const ow = Math.min(w * 0.38, 340);
+        const oh = h * 0.28;
+        ctx.save();
+        ctx.fillStyle = '#efe0c2';
+        ctx.strokeStyle = '#b8893a';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(organX - ow / 2, horizonY - oh - 8, ow, oh, [22, 22, 0, 0]);
+        ctx.fill();
+        ctx.stroke();
+
+        for (let p = 0; p < 17; p++) {
+          const r = (p / 16) * 2 - 1;
+          const px = organX + r * (ow * 0.42);
+          const ph = oh * (0.84 - Math.abs(r) * 0.32);
+          ctx.fillStyle = p % 2 === 0 ? '#c99a42' : '#d8c59e';
+          ctx.fillRect(px - 4, horizonY - 12 - ph, 8, ph);
+        }
+        ctx.restore();
+      }
+
+      // 4. [가깝고 큼직한 1인칭 연주자 & 관객 렌더링]
+      state.screenCharacterBoxes = [];
+      const sortedChars = [...state.characters].sort((a, b) => a.distScale - b.distScale);
+
+      sortedChars.forEach((char) => {
+        const sx = projectAngle(char.worldAngle);
+        if (sx === null) return;
+
+        const baseScale = Math.min(w, h) / 550;
+        const scale = Math.max(0.86, baseScale) * char.distScale;
+        const depthOffset = (char.distScale - 0.86) * (h * 0.40);
+        const sy = horizonY + 52 + depthOffset;
+
+        drawDetailedCharacter(char, sx, sy, scale);
+
+        state.screenCharacterBoxes.push({
+          char,
+          x: sx,
+          y: sy,
+          halfW: 50 * scale,
+          height: 138 * scale
+        });
+      });
+    }
+
+    function drawDetailedCharacter(char, x, y, scale) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+
+      // 큐(Cue) 스포트라이트 효과
+      if (char.spotlight > 0) {
+        const spGrad = ctx.createRadialGradient(0, -60, 10, 0, -60, 95);
+        spGrad.addColorStop(0, `rgba(254, 240, 138, ${Math.min(0.65, char.spotlight * 0.45)})`);
+        spGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+        ctx.fillStyle = spGrad;
+        ctx.beginPath();
+        ctx.arc(0, -60, 95, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const isReacting = char.reactionTimer > 0;
+      const rType = char.reaction;
+      const phase = state.bowPhase + char.worldAngle * 0.1;
+
+      let bodyTilt = Math.sin(phase) * 0.04;
+      let jumpY = 0;
+      if (isReacting) {
+        if (rType === 'banana') {
+          bodyTilt = Math.sin(char.reactionTimer * 18) * 0.42;
+          jumpY = -Math.abs(Math.sin(char.reactionTimer * 12)) * 16;
+        } else if (rType === 'baton' || rType === 'tomato') {
+          jumpY = 12;
+          bodyTilt = -0.15;
+        } else if (rType === 'rose' || rType === 'champagne' || rType === 'cue') {
+          jumpY = -Math.abs(Math.sin(char.reactionTimer * 9)) * 10;
+        }
+      }
+
+      ctx.translate(0, jumpY);
+      ctx.rotate(bodyTilt);
+
+      // 상체 의상
+      ctx.fillStyle = char.outfit;
+      ctx.beginPath();
+      ctx.roundRect(-28, -68, 56, 72, [22, 22, 6, 6]);
+      ctx.fill();
+
+      // 흰색 드레스 셔츠 & 나비넥타이 / 진주 목걸이
+      if (char.role === 'musician' || char.prop === 'monocle' || char.prop === 'clap') {
+        ctx.fillStyle = '#fdfbf7';
+        ctx.beginPath();
+        ctx.moveTo(-10, -66); ctx.lineTo(10, -66); ctx.lineTo(0, -34);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#8b1e24';
+        ctx.beginPath();
+        ctx.moveTo(-7, -64); ctx.lineTo(7, -58); ctx.lineTo(7, -64); ctx.lineTo(-7, -58);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = '#fffbeb';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(0, -64, 11, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+      }
+
+      // 얼굴
+      ctx.fillStyle = '#f6d2b5';
+      ctx.beginPath();
+      ctx.arc(0, -88, 21, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 머리카락
+      ctx.fillStyle = char.hair;
+      ctx.beginPath();
+      ctx.arc(0, -93, 22, Math.PI * 0.95, Math.PI * 2.05);
+      ctx.fill();
+
+      // 표정
+      ctx.fillStyle = '#2c1c12';
+      if (isReacting && (rType === 'banana' || rType === 'tomato' || rType === 'baton')) {
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('> <', 0, -85);
+        ctx.beginPath();
+        ctx.arc(0, -76, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (char.prop === 'sleepy' && !isReacting) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#2c1c12';
+        ctx.beginPath();
+        ctx.moveTo(-11, -87); ctx.lineTo(-4, -87);
+        ctx.moveTo(4, -87); ctx.lineTo(11, -87);
+        ctx.stroke();
+        ctx.font = 'bold 11px serif';
+        ctx.fillStyle = '#6b4830';
+        ctx.fillText('zZ', 22, -102 + Math.sin(phase) * 4);
+      } else {
+        ctx.beginPath();
+        ctx.arc(-7, -88, 2.3, 0, Math.PI * 2);
+        ctx.arc(7, -88, 2.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#8b1e24';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -81, 6, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+      }
+
+      // 악기 또는 관객 소품
+      if (char.role === 'musician') {
+        const bowOffset = Math.sin(phase * 2) * 14;
+        if (char.instrument === 'violin' || char.instrument === 'cello') {
+          ctx.fillStyle = '#9a4319';
+          ctx.strokeStyle = '#4a1d08';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.ellipse(-14, -48, char.instrument === 'cello' ? 18 : 14, char.instrument === 'cello' ? 24 : 9, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.strokeStyle = '#fffbeb';
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(-32 + bowOffset, -56);
+          ctx.lineTo(10 + bowOffset, -38);
+          ctx.stroke();
+        } else if (char.instrument === 'flute') {
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(-4, -74);
+          ctx.lineTo(30, -70 + Math.sin(phase) * 3);
+          ctx.stroke();
+        } else if (char.instrument === 'horn') {
+          ctx.fillStyle = '#d4a348';
+          ctx.strokeStyle = '#855a14';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(16, -54, 12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        } else if (char.instrument === 'timpani') {
+          ctx.fillStyle = '#b45309';
+          ctx.beginPath();
+          ctx.arc(0, -24, 24, 0, Math.PI, false);
+          ctx.fill();
+          ctx.fillStyle = '#fef3c7';
+          ctx.fillRect(-24, -27, 48, 5);
+        }
+
+        ctx.fillStyle = 'rgba(255, 252, 242, 0.88)';
+        ctx.strokeStyle = '#9c6f21';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-20, -34, 40, 18);
+        ctx.strokeRect(-20, -34, 40, 18);
+      } else {
+        if (char.prop === 'glasses') {
+          ctx.strokeStyle = '#d4a348';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(-7, -88, 6, 0, Math.PI * 2);
+          ctx.arc(7, -88, 6, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (char.prop === 'fan') {
+          ctx.fillStyle = '#be123c';
+          ctx.beginPath();
+          ctx.moveTo(14, -55);
+          ctx.arc(14, -55, 16, -Math.PI * 0.85, -Math.PI * 0.15);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          const clapDist = Math.abs(Math.sin(phase * 2.2)) * 8;
+          ctx.fillStyle = '#f6d2b5';
+          ctx.beginPath();
+          ctx.arc(-8 - clapDist, -54, 5.5, 0, Math.PI * 2);
+          ctx.arc(8 + clapDist, -54, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      if (isReacting && rType === 'tomato') {
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.82)';
+        ctx.beginPath();
+        ctx.arc(4, -84, 11, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (isReacting && rType === 'rose') {
+        ctx.font = '18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💖', 0, -118 - Math.sin(char.reactionTimer * 6) * 5);
+      }
+
+      ctx.restore();
+
+      // 이름표 / 말풍선 / 조준 레티클
+      ctx.save();
+      ctx.translate(x, y - 118 * scale);
+
+      if (isReacting && char.speech) {
+        ctx.font = 'bold 12px "Noto Sans KR", sans-serif';
+        const textW = ctx.measureText(char.speech).width + 20;
+        ctx.fillStyle = '#fffdf7';
+        ctx.strokeStyle = '#8b1e24';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.roundRect(-textW / 2, -34, textW, 24, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#8b1e24';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(char.speech, 0, -22);
+      } else {
+        const isArmed = Boolean(state.equippedItemId);
+        const isHovered = isArmed && state.hoveredCharacter && state.hoveredCharacter.id === char.id;
+
+        if (isHovered) {
+          // 아이템 조준 타겟 링
+          ctx.save();
+          ctx.translate(0, 60 * scale);
+          ctx.strokeStyle = '#dc2626';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath();
+          ctx.arc(0, 0, 44 * scale, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.font = 'bold 10px "Noto Sans KR", sans-serif';
+        const label = isArmed ? `🎯 ${char.name}` : char.name;
+        const lw = ctx.measureText(label).width + 14;
+        ctx.fillStyle = isHovered ? '#8b1e24' : isArmed ? 'rgba(139, 30, 36, 0.88)' : 'rgba(253, 248, 236, 0.84)';
+        ctx.strokeStyle = isArmed ? '#fde68a' : 'rgba(184, 137, 58, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(-lw / 2, -12, lw, 18, 9);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isArmed ? '#fffbeb' : '#4a2a18';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, 0, -3);
+      }
+      ctx.restore();
+    }
+
+    /**
+     * ============================================================================
+     * 11. 지휘자 보면대 악보 트랙 & 1인칭 양손(연미복·커프스·흰장갑·지휘봉) 렌더링
+     * ============================================================================
+     */
+    function renderSheetMusicAndHands(w, h) {
+      const geo = getSheetGeometry();
+      const { cx, topY, judgeY, bottomY, topHalfW, bottomHalfW, isExplore } = geo;
+
+      // 1. 지휘자 호두나무 & 황동 보면대 프레임 (악보 받침대)
+      ctx.save();
+      if (isExplore) ctx.globalAlpha = 0.22;
+
+      const bottomFullHalfW = bottomHalfW + (bottomHalfW - topHalfW) * ((bottomY - judgeY) / (judgeY - topY));
+
+      // 보면대 나무 테두리 받침
+      ctx.fillStyle = '#4a2a18';
+      ctx.strokeStyle = '#c59b4b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - topHalfW - 10, topY - 6);
+      ctx.lineTo(cx + topHalfW + 10, topY - 6);
+      ctx.lineTo(cx + bottomFullHalfW + 14, bottomY + 8);
+      ctx.lineTo(cx - bottomFullHalfW - 14, bottomY + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 크림 양피지 악보 트랙
+      const sheetGrad = ctx.createLinearGradient(0, topY, 0, bottomY);
+      sheetGrad.addColorStop(0, '#f5ebd6');
+      sheetGrad.addColorStop(0.5, '#fcf7ec');
+      sheetGrad.addColorStop(1, '#f2e4c6');
+
+      ctx.fillStyle = sheetGrad;
+      ctx.beginPath();
+      ctx.moveTo(cx - topHalfW, topY);
+      ctx.lineTo(cx + topHalfW, topY);
+      ctx.lineTo(cx + bottomFullHalfW, bottomY);
+      ctx.lineTo(cx - bottomFullHalfW, bottomY);
+      ctx.closePath();
+      ctx.fill();
+
+      // 오선지 수평 보조선 (클래식 악보 감성)
+      ctx.strokeStyle = 'rgba(139, 101, 52, 0.16)';
+      ctx.lineWidth = 1;
+      for (let s = 1; s <= 5; s++) {
+        const t = s / 6;
+        const sy = topY + (judgeY - topY) * Math.pow(t, 1.38);
+        const shw = topHalfW + (bottomHalfW - topHalfW) * Math.pow(t, 1.38);
+        ctx.beginPath();
+        ctx.moveTo(cx - shw, sy);
+        ctx.lineTo(cx + shw, sy);
+        ctx.stroke();
+      }
+
+      // 4개 레인 구분선 & 입력 플래시
+      for (let i = 0; i < 4; i++) {
+        const tl = cx - topHalfW + (i / 4) * (topHalfW * 2);
+        const tr = cx - topHalfW + ((i + 1) / 4) * (topHalfW * 2);
+        const bl = cx - bottomFullHalfW + (i / 4) * (bottomFullHalfW * 2);
+        const br = cx - bottomFullHalfW + ((i + 1) / 4) * (bottomFullHalfW * 2);
+
+        if (state.lanePressed[i] || state.laneFlash[i] > 0) {
+          const a = state.lanePressed[i] ? 0.30 : state.laneFlash[i] * 0.22;
+          ctx.fillStyle = `rgba(139, 30, 36, ${a})`;
+          ctx.beginPath();
+          ctx.moveTo(tl, topY);
+          ctx.lineTo(tr, topY);
+          ctx.lineTo(br, bottomY);
+          ctx.lineTo(bl, bottomY);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        if (i > 0) {
+          ctx.strokeStyle = 'rgba(156, 111, 33, 0.35)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(tl, topY);
+          ctx.lineTo(bl, bottomY);
+          ctx.stroke();
+        }
+      }
+
+      // 황동 판정선 & 키 뱃지 (D F J K)
+      ctx.strokeStyle = '#8b1e24';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - bottomHalfW - 4, judgeY);
+      ctx.lineTo(cx + bottomHalfW + 4, judgeY);
+      ctx.stroke();
+
+      for (let i = 0; i < 4; i++) {
+        const pt = projectNotePoint(i, 1.0, geo);
+        const ky = judgeY + (bottomY - judgeY) * 0.52;
+
+        ctx.fillStyle = state.lanePressed[i] ? '#8b1e24' : '#fffdf7';
+        ctx.strokeStyle = '#b8893a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(pt.x - 14, ky - 10, 28, 20, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 12px "Cormorant Garamond", serif';
+        ctx.fillStyle = state.lanePressed[i] ? '#fdf8ee' : '#4a2a18';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(LANE_LABELS[i], pt.x, ky + 0.5);
+      }
+
+      // 노트 렌더링 (TAP, CRITICAL 다이아몬드, HOLD 이음줄 리본, FLICK 상향 화살표)
+      const visibleBeats = 14 / (state.noteSpeed / 4.5);
+
+      if (state.mode === 'playing') {
+        for (const n of state.notes) {
+          if (n.type !== 'HOLD' || n.holdCompleted || n.missed) continue;
+          const hBeat = n.holding ? Math.max(n.beat, state.currentBeat) : n.beat;
+          const tBeat = n.beat + n.holdDuration;
+          const pH = 1 - (hBeat - state.currentBeat) / visibleBeats;
+          const pT = 1 - (tBeat - state.currentBeat) / visibleBeats;
+          if (pH < 0 || pT > 1.1) continue;
+
+          const ptH = projectNotePoint(n.lane, Math.min(1.02, pH), geo);
+          const ptT = projectNotePoint(n.lane, Math.max(0, pT), geo);
+
+          ctx.fillStyle = n.holding ? 'rgba(63, 125, 68, 0.78)' : 'rgba(63, 125, 68, 0.52)';
+          ctx.beginPath();
+          ctx.moveTo(ptT.x - ptT.laneW * 0.34, ptT.y);
+          ctx.lineTo(ptT.x + ptT.laneW * 0.34, ptT.y);
+          ctx.lineTo(ptH.x + ptH.laneW * 0.34, ptH.y);
+          ctx.lineTo(ptH.x - ptH.laneW * 0.34, ptH.y);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        for (let idx = state.notes.length - 1; idx >= 0; idx--) {
+          const n = state.notes[idx];
+          if (n.missed || (n.hit && n.type !== 'HOLD') || n.holdCompleted) continue;
+
+          const dBeat = n.holding ? state.currentBeat : n.beat;
+          const prog = 1 - (dBeat - state.currentBeat) / visibleBeats;
+          if (prog < 0 || prog > 1.1) continue;
+
+          const pt = projectNotePoint(n.lane, prog, geo);
+          const nw = pt.laneW * 0.8;
+          const nh = Math.max(5, 13 * pt.scale);
+
+          let fill = '#1e3a8a'; // 딥 네이비 음표
+          if (n.type === 'CRITICAL') fill = '#d97706'; // 황금 강세(Forte) 노트
+          else if (n.type === 'HOLD') fill = '#15803d'; // 에메랄드 프레이즈 노트
+          else if (n.type === 'FLICK') fill = '#9f1239'; // 로열 크림슨 큐 사인
+
+          ctx.save();
+          ctx.fillStyle = fill;
+          ctx.strokeStyle = '#fffbeb';
+          ctx.lineWidth = Math.max(1, 1.8 * pt.scale);
+
+          if (n.type === 'CRITICAL') {
+            // 강세(Forte) 다이아몬드 형태
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y - nh * 0.8);
+            ctx.lineTo(pt.x + nw * 0.46, pt.y);
+            ctx.lineTo(pt.x, pt.y + nh * 0.8);
+            ctx.lineTo(pt.x - nw * 0.46, pt.y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+          } else {
+            ctx.beginPath();
+            ctx.roundRect(pt.x - nw / 2, pt.y - nh / 2, nw, nh, 5 * pt.scale);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          if (n.type === 'FLICK') {
+            // 상향 황금 큐 화살표
+            ctx.fillStyle = '#d97706';
+            ctx.strokeStyle = '#8b1e24';
+            ctx.lineWidth = 1.2 * pt.scale;
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y - nh * 1.5);
+            ctx.lineTo(pt.x + nw * 0.3, pt.y - nh * 0.6);
+            ctx.lineTo(pt.x - nw * 0.3, pt.y - nh * 0.6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        if (state.combo >= 2) {
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.font = 'italic bold 32px "Cormorant Garamond", serif';
+          ctx.fillStyle = '#8b1e24';
+          ctx.fillText(`${state.combo} COMBO`, cx, topY - 14);
+          ctx.restore();
+        }
+
+        if (state.lastJudgment) {
+          ctx.save();
+          ctx.translate(cx, judgeY - 46);
+          ctx.scale(state.lastJudgment.scale, state.lastJudgment.scale);
+          ctx.globalAlpha = Math.max(0, state.lastJudgment.alpha);
+          ctx.textAlign = 'center';
+          ctx.font = 'italic bold 20px "Cormorant Garamond", serif';
+          ctx.fillStyle = state.lastJudgment.color;
+          ctx.fillText(state.lastJudgment.text, 0, 0);
+          ctx.restore();
+        }
+
+        if (state.currentBeat < 0) {
+          const cnt = Math.ceil(Math.abs(state.currentBeat));
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.font = 'italic bold 44px "Cormorant Garamond", serif';
+          ctx.fillStyle = '#8b1e24';
+          ctx.fillText(cnt, cx, topY - 24);
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+
+      // 2. [1인칭 지휘자 양손 렌더링] - 스팀 '마에스트로' 스타일 전경 양손 액팅!
+      drawFirstPersonConductorHands(w, h);
+
+      // 3. 날아가는 투사체 (포물선 궤적 + 원근감 + 회전)
+      state.projectiles.forEach((p) => {
+        const item = THROW_ITEMS[p.itemId];
+        if (!item) return;
+
+        const t = p.progress;
+        const curX = p.startX + (p.targetX - p.startX) * t;
+        const arcHeight = Math.sin(t * Math.PI) * 165;
+        const curY = p.startY + (p.targetY - p.startY) * t - arcHeight;
+        const scale = 1.4 - t * 0.48;
+
+        ctx.save();
+        ctx.translate(curX, curY);
+        ctx.rotate(p.spin);
+        ctx.scale(scale, scale);
+        ctx.font = '36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.emoji, 0, 0);
+        ctx.restore();
+      });
+
+      // 4. 파티클 & 명중 팝업 텍스트
+      state.particles.forEach((pt) => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, pt.life);
+        if (pt.emoji) {
+          ctx.font = '18px sans-serif';
+          ctx.fillText(pt.emoji, pt.x, pt.y);
+        } else {
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+
+      state.floatingPopups.forEach((fp) => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, fp.life);
+        ctx.font = 'bold 14px "Noto Serif KR", serif';
+        ctx.textAlign = 'center';
+        const tw = ctx.measureText(fp.text).width + 18;
+        ctx.fillStyle = 'rgba(253, 248, 236, 0.95)';
+        ctx.strokeStyle = '#b8893a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(fp.x - tw / 2, fp.y - 12, tw, 24, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = fp.color;
+        ctx.fillText(fp.text, fp.x, fp.y + 4);
+        ctx.restore();
+      });
+    }
+
+    /**
+     * 테일러드 블랙 연미복 소매, 흰색 드레스 셔츠 커프스, 금장 커프스 버튼, 흰 장갑,
+     * 오른손의 상아·황금 지휘봉(황금 잔상 궤적) & 왼손의 표현/큐/투척 제스처 렌더링
+     */
+    function drawFirstPersonConductorHands(w, h) {
+      // VR 스타일 미세한 마우스 트래킹 스웨이
+      const mouseSwayX = ((state.mousePos.x / Math.max(1, w)) - 0.5) * 26;
+      const mouseSwayY = ((state.mousePos.y / Math.max(1, h)) - 0.5) * 14;
+      const breathY = Math.sin(performance.now() * 0.0025) * 4;
+
+      // =========================================================================
+      // [A] 왼손 (Left Hand): 크레셴도 상승, 큐 사인 지시, 아이템 투척 모션
+      // =========================================================================
+      const cueActive = state.leftHandCueTimer > 0;
+      const throwActive = state.leftHandThrowAnim > 0;
+
+      let leftOffsetX = Math.cos(state.batonSwingPhase * 0.5) * 14 + mouseSwayX * 0.8;
+      let leftOffsetY = Math.sin(state.batonSwingPhase * 0.5) * 10 + breathY + mouseSwayY * 0.7;
+
+      // 프레이즈 홀드 중 왼손을 우아하게 들어 올림
+      leftOffsetY -= state.leftHandHoldLift * 48;
+
+      // 큐(Cue) 노트 히트 시 악기 섹션을 향해 왼손을 뻗어 지시
+      if (cueActive) {
+        const cueEase = Math.sin((state.leftHandCueTimer / 0.85) * Math.PI);
+        leftOffsetX += state.leftHandCueDir * 65 * cueEase;
+        leftOffsetY -= 55 * cueEase;
+      }
+
+      // 아이템 투척 시 왼손이 전방 상단으로 힘차게 뻗는 투척 액팅
+      if (throwActive) {
+        const throwArc = Math.sin(state.leftHandThrowAnim * Math.PI);
+        leftOffsetX += 48 * throwArc;
+        leftOffsetY -= 88 * throwArc;
+      }
+
+      const lx = Math.max(115, w * 0.25) + leftOffsetX;
+      const ly = h * 0.87 + leftOffsetY;
+
+      ctx.save();
+      // 1) 검은색 연미복 소매 (좌측 하단에서 대각선으로 뻗어 나옴)
+      ctx.fillStyle = '#181514';
+      ctx.strokeStyle = '#0c0a09';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(lx - 135, h + 30);
+      ctx.lineTo(lx - 26, ly + 12);
+      ctx.lineTo(lx + 18, ly + 36);
+      ctx.lineTo(lx - 65, h + 30);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 2) 빳빳한 흰색 드레스 셔츠 커프스 & 금장 커프스 버튼
+      ctx.save();
+      ctx.translate(lx - 6, ly + 22);
+      ctx.rotate(-0.55);
+      ctx.fillStyle = '#fdfbf7';
+      ctx.strokeStyle = '#d6cbb5';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-22, -10, 44, 20, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      // 황금 커프스 링크
+      ctx.fillStyle = '#d4a348';
+      ctx.strokeStyle = '#855a14';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(-12, 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 3) 흰색 연주용 장갑 낀 왼손 (손바닥/손가락 제스처)
+      ctx.save();
+      ctx.translate(lx + 8, ly + 2);
+      ctx.rotate(cueActive ? 0.22 : throwActive ? -0.35 : -0.15);
+
+      ctx.fillStyle = '#fcfaf5';
+      ctx.strokeStyle = '#cbbba0';
+      ctx.lineWidth = 1.6;
+
+      // 손바닥 본체
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 18, 14, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 우아하게 펴진 손가락 4개 + 엄지
+      const fingerSpread = cueActive || throwActive ? 1.3 : 1.0;
+      for (let f = 0; f < 4; f++) {
+        const fx = -8 + f * 5.5;
+        const flen = (f === 1 || f === 2 ? 22 : 18) * fingerSpread;
+        ctx.beginPath();
+        ctx.roundRect(fx - 2.2, -12 - flen * 0.4, 4.4, flen, 2.2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      // 엄지손가락
+      ctx.beginPath();
+      ctx.roundRect(12, -4, 14, 5.5, 2.8);
+      ctx.fill();
+      ctx.stroke();
+
+      // 장갑 손등의 세 줄 주름 디테일
+      ctx.strokeStyle = 'rgba(180, 165, 140, 0.6)';
+      ctx.lineWidth = 1;
+      [-4, 0, 4].forEach((gx) => {
+        ctx.beginPath();
+        ctx.moveTo(gx, 0);
+        ctx.lineTo(gx, 9);
+        ctx.stroke();
+      });
+      ctx.restore();
+      ctx.restore();
+
+      // =========================================================================
+      // [B] 오른손 (Right Hand): 4/4박자 궤적 지휘 & 상아·황금 지휘봉 + 잔상
+      // =========================================================================
+      const beatSwingX = Math.sin(state.batonSwingPhase) * 38;
+      const beatSwingY = Math.abs(Math.cos(state.batonSwingPhase)) * 24 - state.rightHandSnap * 30;
+
+      const rx = Math.min(w - 115, w * 0.75) + beatSwingX + mouseSwayX;
+      const ry = h * 0.86 + beatSwingY + breathY + mouseSwayY;
+
+      // 지휘봉 끝단 좌표 계산
+      const batonAngle = -0.78 + Math.sin(state.batonSwingPhase) * 0.25 - state.rightHandSnap * 0.35;
+      const batonLen = 112;
+      const tipX = rx - 14 + Math.cos(batonAngle - Math.PI / 2) * batonLen;
+      const tipY = ry - 8 + Math.sin(batonAngle - Math.PI / 2) * batonLen;
+
+      // 지휘봉 황금빛 잔상 궤적 기록
+      state.rightHandTrail.push({ x: tipX, y: tipY, life: 1.0 });
+      if (state.rightHandTrail.length > 18) state.rightHandTrail.shift();
+
+      // 잔상 궤적 렌더링
+      if (state.rightHandTrail.length > 1) {
+        ctx.save();
+        for (let i = 1; i < state.rightHandTrail.length; i++) {
+          const p0 = state.rightHandTrail[i - 1];
+          const p1 = state.rightHandTrail[i];
+          const ratio = i / state.rightHandTrail.length;
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p1.x, p1.y);
+          ctx.strokeStyle = `rgba(212, 163, 72, ${ratio * p1.life * 0.55})`;
+          ctx.lineWidth = ratio * 5;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      ctx.save();
+      // 1) 검은색 연미복 소매 (우측 하단에서 올라옴)
+      ctx.fillStyle = '#181514';
+      ctx.strokeStyle = '#0c0a09';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(rx + 135, h + 30);
+      ctx.lineTo(rx + 26, ry + 12);
+      ctx.lineTo(rx - 18, ry + 36);
+      ctx.lineTo(rx + 65, h + 30);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 2) 흰색 드레스 셔츠 커프스 & 금장 커프스 버튼
+      ctx.save();
+      ctx.translate(rx + 6, ry + 22);
+      ctx.rotate(0.55);
+      ctx.fillStyle = '#fdfbf7';
+      ctx.strokeStyle = '#d6cbb5';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-22, -10, 44, 20, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#d4a348';
+      ctx.strokeStyle = '#855a14';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(12, 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 3) 흰 장갑 낀 오른손 (지휘봉을 섬세하게 쥔 자세)
+      ctx.save();
+      ctx.translate(rx - 8, ry + 2);
+      ctx.rotate(batonAngle + 0.65);
+
+      ctx.fillStyle = '#fcfaf5';
+      ctx.strokeStyle = '#cbbba0';
+      ctx.lineWidth = 1.6;
+
+      // 손등 & 쥔 손가락
+      ctx.beginPath();
+      ctx.ellipse(0, 2, 17, 14, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 지휘봉을 감싸 쥔 손가락 마디들
+      for (let f = 0; f < 4; f++) {
+        ctx.beginPath();
+        ctx.roundRect(-12, -8 + f * 4.5, 14, 4.2, 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 4) 상아색 & 앤티크 골드 지휘봉 (Baton)
+      ctx.save();
+      const gripX = rx - 14;
+      const gripY = ry - 8;
+
+      // 지휘봉 샤프트 (가늘고 우아한 상아빛 테이퍼)
+      const batonGrad = ctx.createLinearGradient(gripX, gripY, tipX, tipY);
+      batonGrad.addColorStop(0, '#d4a348');
+      batonGrad.addColorStop(0.25, '#fffdf7');
+      batonGrad.addColorStop(1, '#ffffff');
+
+      ctx.strokeStyle = batonGrad;
+      ctx.lineWidth = 3.6;
+      ctx.lineCap = 'round';
+      ctx.shadowColor = 'rgba(212, 163, 72, 0.7)';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(gripX, gripY);
+      ctx.lineTo(tipX, tipY);
+      ctx.stroke();
+
+      // 코르크 & 황금 손잡이
+      ctx.translate(gripX, gripY);
+      ctx.rotate(batonAngle);
+      ctx.fillStyle = '#78350f';
+      ctx.strokeStyle = '#d4a348';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(-4.5, -4, 9, 18, 4);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 지휘봉 끝단 반짝임 포인트
+      ctx.fillStyle = '#fffbeb';
+      ctx.shadowColor = '#fde68a';
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(tipX, tipY, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    /**
+     * ============================================================================
+     * 12. 메인 애니메이션 루프
+     * ============================================================================
+     */
+    let lastTime = performance.now();
+    function mainLoop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      update(now, dt);
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      renderHallAndPeople(w, h);
+      renderSheetMusicAndHands(w, h);
+
+      requestAnimationFrame(mainLoop);
+    }
+
+    window.onload = () => {
+      requestAnimationFrame(mainLoop);
+    };
+  </script>
+</body>
+</html>
